@@ -34,7 +34,7 @@
   "url": "https://tools.hieu-icetea.io.vn/",
   "inLanguage": "vi",
   "description": "Tập hợp các công cụ web nhỏ, độc lập do Hiếu iceTea xây dựng.",
-  "author": { "@type": "Person", "name": "Hiếu iceTea" }
+  "author": { "@type": "Person", "name": "Hiếu iceTea", "url": "https://hieu-icetea.io.vn" }
 }
 </script>
 
@@ -116,7 +116,7 @@ tailwind.config = {
         </div>
         <div>
           <div class="font-extrabold text-lg leading-tight">Tools</div>
-          <div class="text-xs text-inkmuted dark:text-mint/80 leading-tight">bởi Hiếu iceTea 🍀</div>
+          <div class="text-xs text-inkmuted dark:text-mint/80 leading-tight">bởi <a href="https://hieu-icetea.io.vn" target="_blank" rel="noopener noreferrer" class="font-medium hover:underline">Hiếu iceTea</a> 🍀</div>
         </div>
       </div>
 
@@ -139,22 +139,40 @@ tailwind.config = {
       </p>
       <div class="flex flex-wrap gap-2 text-xs font-medium">
         <span id="statCount" class="px-3 py-1.5 rounded-full bg-mint/30 dark:bg-mint/20 text-ink dark:text-mint">— công cụ</span>
-        <span class="px-3 py-1.5 rounded-full bg-peach/30 dark:bg-peach/20 text-ink dark:text-peach">100% tĩnh · GitHub Pages</span>
+        <span class="px-3 py-1.5 rounded-full bg-peach/30 dark:bg-peach/20 text-ink dark:text-peach">100% tĩnh</span>
         <span class="px-3 py-1.5 rounded-full bg-lavender/30 dark:bg-lavender/20 text-ink dark:text-lavender">Mã nguồn mở</span>
       </div>
     </section>
 
     <!-- Search + filter -->
-    <section class="mb-6 sm:mb-8 flex flex-col sm:flex-row gap-3 fade-up" style="animation-delay:.05s">
-      <div class="relative flex-1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-inkmuted dark:text-cream/50">
-          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
-        </svg>
-        <input id="searchInput" type="search" placeholder="Tìm công cụ theo tên, mô tả, thẻ..."
-          class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white/70 dark:bg-darksurface border border-ink/10 dark:border-cream/10 text-sm placeholder:text-inkmuted/60 dark:placeholder:text-cream/40 outline-none focus:ring-2 focus:ring-mint">
-        <button id="clearSearch" type="button" aria-label="Xoá tìm kiếm" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-inkmuted hover:text-ink dark:text-cream/50 dark:hover:text-cream">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
-        </button>
+    <section class="mb-6 sm:mb-8 flex flex-col gap-3 fade-up" style="animation-delay:.05s">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative w-full sm:max-w-sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-inkmuted dark:text-cream/50">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+          </svg>
+          <input id="searchInput" type="search" placeholder="Tìm công cụ theo tên, mô tả, thẻ..."
+            class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white/70 dark:bg-darksurface border border-ink/10 dark:border-cream/10 text-sm placeholder:text-inkmuted/60 dark:placeholder:text-cream/40 outline-none focus:ring-2 focus:ring-mint">
+          <button id="clearSearch" type="button" aria-label="Xoá tìm kiếm" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-inkmuted hover:text-ink dark:text-cream/50 dark:hover:text-cream">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="relative flex-shrink-0 sm:w-56">
+          <select id="sortSelect" aria-label="Sắp xếp danh sách công cụ"
+            class="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-white/70 dark:bg-darksurface border border-ink/10 dark:border-cream/10 text-sm outline-none focus:ring-2 focus:ring-mint cursor-pointer">
+            <option value="default">Mặc định</option>
+            <option value="name-asc">Tên A → Z</option>
+            <option value="name-desc">Tên Z → A</option>
+            <option value="updated-desc">Cập nhật: mới nhất</option>
+            <option value="updated-asc">Cập nhật: cũ nhất</option>
+            <option value="created-desc">Ngày tạo: mới nhất</option>
+            <option value="created-asc">Ngày tạo: cũ nhất</option>
+            <option value="tag-group">Nhóm theo tag liên quan</option>
+          </select>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-inkmuted dark:text-cream/50 pointer-events-none">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
       </div>
       <div id="tagFilters" class="flex flex-wrap gap-2 items-center text-xs"></div>
     </section>
@@ -167,17 +185,47 @@ tailwind.config = {
       </div>
     </section>
 
-    <footer class="mt-16 pt-6 border-t border-ink/10 dark:border-cream/10 flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between text-xs text-inkmuted dark:text-cream/50">
-      <span>tạo bởi Hiếu iceTea 🍀</span>
-      <span>tools.hieu-icetea.io.vn</span>
+    <footer class="mt-16 pt-6 border-t border-ink/10 dark:border-cream/10 text-xs text-inkmuted dark:text-cream/50">
+      <div class="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between">
+        <span>tạo bởi <a href="https://hieu-icetea.io.vn" target="_blank" rel="noopener noreferrer" class="font-medium hover:underline">Hiếu iceTea</a> 🍀</span>
+        <span>tools.hieu-icetea.io.vn</span>
+      </div>
+      <p class="mt-3 text-[11px] text-inkmuted/70 dark:text-cream/40 max-w-xl leading-relaxed">
+        Tools là một sản phẩm thuộc hệ sinh thái
+        <a href="https://hieu-icetea.io.vn" target="_blank" rel="noopener noreferrer" class="font-medium hover:underline">Hiếu iceTea 🍀</a>
+        — tập hợp các dự án cá nhân (blog, công cụ, thử nghiệm...) do cùng một tác giả xây dựng và duy trì độc lập.
+      </p>
     </footer>
+  </div>
+
+  <!-- Modal dùng chung cho toàn site (class Modal, generic) — bất kỳ tính năng nào cũng gọi được qua modal.open({...}).
+       "Modal trạng thái tool" chỉ là 1 CÁCH DÙNG cụ thể, xem hàm openStatusModal() ở dưới. -->
+  <div id="modalBackdrop" class="hidden fixed inset-0 z-50 bg-ink/40 dark:bg-black/60 backdrop-blur-sm items-center justify-center p-4 opacity-0 transition-opacity duration-200 ease-out">
+    <div id="modalBox" role="dialog" aria-modal="true" aria-labelledby="modalTitle"
+      class="w-full max-w-sm rounded-2xl bg-cream dark:bg-darksurface border border-ink/10 dark:border-cream/10 shadow-2xl p-6 scale-95 opacity-0 transition-all duration-200 ease-out">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div id="modalBadge" class="px-3 py-1 rounded-full text-xs font-semibold"></div>
+        <button id="modalCloseBtn" type="button" aria-label="Đóng" class="text-inkmuted hover:text-ink dark:text-cream/50 dark:hover:text-cream flex-shrink-0 active:scale-90 transition">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <h2 id="modalTitle" class="font-bold text-lg mb-1.5"></h2>
+      <p id="modalMessage" class="text-sm text-inkmuted dark:text-cream/70 mb-4"></p>
+      <div class="flex flex-col gap-2">
+        <a id="modalPrimaryBtn" href="#" class="hidden w-full text-center whitespace-nowrap px-4 py-2.5 rounded-xl bg-ink text-cream dark:bg-cream dark:text-darkbg text-sm font-semibold hover:opacity-90 active:scale-95 transition"></a>
+        <button id="modalSecondaryBtn" type="button" class="w-full px-4 py-2 rounded-xl border border-ink/15 dark:border-cream/15 text-sm font-semibold hover:bg-ink/5 dark:hover:bg-cream/10 active:scale-95 transition">Đã hiểu</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 document.documentElement.classList.add('js');
 
-/* ===== Bộ dữ liệu công cụ (Data-Driven) ===== */
+/* ===== Bộ dữ liệu công cụ (Data-Driven) =====
+   ⚠️ DEMO DATA — các mục bên dưới (trừ "claude-session-planner") là DỮ LIỆU GIẢ LẬP
+   chỉ phục vụ kiểm thử UI (tìm kiếm, lọc tag, số lượng lớn thẻ/tag). KHÔNG phải tool
+   thật, url trỏ "#". Xoá các mục demo này trước khi đưa nhánh chính thức lên production. */
 const TOOLS = [
   {
     id: 'claude-session-planner',
@@ -185,17 +233,101 @@ const TOOLS = [
     description: 'Mô phỏng & tối ưu lịch so le nhiều tài khoản Claude theo cửa sổ phiên 5 giờ, giảm tối đa thời gian chờ hồi quota.',
     url: './claude-session-planner/',
     tags: ['Claude', 'Lập lịch', 'Mô phỏng'],
-    updated: '2026-06-19'
-  }
+    created: '2026-06-15', updated: '2026-06-19', status: 'active'
+  },
+  { id: 'demo-timeline-viewer', name: 'Timeline Viewer', description: 'Xem & trực quan hoá lịch sử sự kiện theo dòng thời gian, kéo-thả để phóng to/thu nhỏ khoảng thời gian.', url: '#', tags: ['Timeline', 'Trực quan hoá', 'Lịch sử'], created: '2025-09-10', updated: '2026-05-02', status: 'unlicensed' },
+  { id: 'demo-construction-calc', name: 'Construction Calculator', description: 'Tính số liệu vật tư xây dựng theo định mức, xuất bảng dự toán nhanh.', url: '#', tags: ['Xây dựng', 'Tính toán', 'Định mức'], created: '2025-06-01', updated: '2026-04-18', status: 'maintenance' },
+  { id: 'demo-qr-generator', name: 'QR Code Generator', description: 'Tạo mã QR từ văn bản/link, tuỳ chỉnh màu sắc và logo ở giữa.', url: '#', tags: ['QR', 'Tiện ích', 'Hình ảnh'], created: '2026-03-20', updated: '2026-03-27', status: 'paused' },
+  { id: 'demo-markdown-preview', name: 'Markdown Previewer', description: 'Soạn Markdown và xem trước kết quả render theo thời gian thực.', url: '#', tags: ['Markdown', 'Văn bản', 'Xem trước'], created: '2026-03-15', updated: '2026-03-15', status: 'migrated', migratedTo: { name: 'Markdown Studio', url: '#' } },
+  { id: 'demo-color-picker', name: 'Color Palette Picker', description: 'Chọn & sinh bảng phối màu hài hoà, xuất mã CSS/Tailwind trực tiếp.', url: '#', tags: ['Màu sắc', 'Thiết kế', 'CSS'], created: '2025-12-01', updated: '2026-02-28', status: 'deprecated' },
+  { id: 'demo-json-formatter', name: 'JSON Formatter', description: 'Định dạng, thu gọn và kiểm tra cú pháp JSON ngay trên trình duyệt.', url: '#', tags: ['JSON', 'Dev', 'Định dạng'], created: '2026-02-14', updated: '2026-02-14', status: 'developing' },
+  { id: 'demo-regex-tester', name: 'Regex Tester', description: 'Kiểm tra biểu thức chính quy theo thời gian thực, highlight kết quả khớp.', url: '#', tags: ['Regex', 'Dev', 'Kiểm tra'], created: '2025-10-05', updated: '2026-01-30', status: 'paused' },
+  { id: 'demo-pomodoro', name: 'Pomodoro Timer', description: 'Đếm giờ tập trung theo phương pháp Pomodoro, có âm báo và thống kê phiên.', url: '#', tags: ['Năng suất', 'Đếm giờ', 'Tập trung'], created: '2026-01-12', updated: '2026-01-12', status: 'paused' },
+  { id: 'demo-unit-converter', name: 'Unit Converter', description: 'Chuyển đổi đơn vị đo lường: độ dài, khối lượng, nhiệt độ, tiền tệ...', url: '#', tags: ['Tính toán', 'Chuyển đổi', 'Tiện ích'], created: '2025-05-20', updated: '2025-12-20', status: 'migrated', migratedTo: { name: 'Unit Converter Pro', url: '#' } },
+  { id: 'demo-password-gen', name: 'Password Generator', description: 'Sinh mật khẩu ngẫu nhiên mạnh, tuỳ chỉnh độ dài và bộ ký tự.', url: '#', tags: ['Bảo mật', 'Mật khẩu', 'Tiện ích'], created: '2025-12-05', updated: '2025-12-05', status: 'deprecated' },
+  { id: 'demo-base64', name: 'Base64 Encoder/Decoder', description: 'Mã hoá và giải mã chuỗi/tệp Base64 nhanh chóng, kéo-thả file trực tiếp.', url: '#', tags: ['Dev', 'Mã hoá', 'Định dạng'], created: '2025-11-22', updated: '2025-11-22', status: 'paused' },
+  { id: 'demo-lorem-ipsum', name: 'Lorem Ipsum Generator', description: 'Sinh văn bản giả (Lorem Ipsum hoặc tiếng Việt) để làm placeholder thiết kế.', url: '#', tags: ['Văn bản', 'Thiết kế', 'Placeholder'], created: '2025-07-15', updated: '2025-11-08', status: 'migrated', migratedTo: { name: 'Lorem Ipsum Generator 2', url: '#' } },
+  { id: 'demo-word-counter', name: 'Word Counter', description: 'Đếm số từ, ký tự, đoạn văn — hữu ích khi viết bài có giới hạn độ dài.', url: '#', tags: ['Văn bản', 'Thống kê', 'Viết lách'], created: '2025-10-19', updated: '2025-10-19', status: 'deprecated' },
+  { id: 'demo-csv-json', name: 'CSV ⇄ JSON Converter', description: 'Chuyển đổi qua lại giữa định dạng CSV và JSON, xem trước dạng bảng.', url: '#', tags: ['Dev', 'Định dạng', 'Chuyển đổi'], created: '2025-10-01', updated: '2025-10-01', status: 'deprecated' },
+  { id: 'demo-diff-checker', name: 'Diff Checker', description: 'So sánh 2 đoạn văn bản/code, highlight rõ phần thêm/xoá/thay đổi.', url: '#', tags: ['Dev', 'Kiểm tra', 'Văn bản'], created: '2025-04-10', updated: '2025-09-14', status: 'maintenance' },
+  { id: 'demo-image-compressor', name: 'Image Compressor', description: 'Nén ảnh JPG/PNG/WebP ngay trên trình duyệt, không upload lên server.', url: '#', tags: ['Hình ảnh', 'Tiện ích', 'Nén dữ liệu'], created: '2025-08-30', updated: '2025-08-30', status: 'unlicensed' },
+  { id: 'demo-habit-tracker', name: 'Habit Tracker', description: 'Theo dõi thói quen hàng ngày, xem biểu đồ chuỗi ngày liên tục (streak).', url: '#', tags: ['Năng suất', 'Thống kê', 'Theo dõi'], created: '2025-08-11', updated: '2025-08-11', status: 'developing' },
+  { id: 'demo-cron-builder', name: 'Cron Expression Builder', description: 'Xây dựng & giải thích biểu thức cron bằng giao diện trực quan, không cần nhớ cú pháp.', url: '#', tags: ['Dev', 'Lập lịch', 'Tiện ích'], created: '2025-03-01', updated: '2025-07-25', status: 'developing' },
+  { id: 'demo-gradient-maker', name: 'CSS Gradient Maker', description: 'Tạo gradient CSS đa điểm màu bằng kéo-thả, xuất code ngay lập tức.', url: '#', tags: ['Màu sắc', 'CSS', 'Thiết kế'], created: '2025-07-02', updated: '2025-07-02', status: 'deprecated' }
 ];
 
 const ACCENTS = ['mint', 'peach', 'mustard', 'lavender'];
+
+/* Thông tin liên hệ tác giả — dùng chung cho trạng thái "unlicensed" (chưa kích hoạt bản quyền). */
+const AUTHOR_CONTACT_EMAIL = 'DinhHieu8896@gmail.com';
+const AUTHOR_CONTACT_PHONE = '0868663315';
+const AUTHOR_CONTACT_URL = 'mailto:' + AUTHOR_CONTACT_EMAIL;
+
+/* Cấu hình trạng thái tool — data-driven, thêm trạng thái mới chỉ cần thêm 1 dòng ở đây. */
+const STATUS_META = {
+  active:      { label: 'Đang hoạt động',   badge: 'bg-mint/25 text-ink dark:bg-mint/20 dark:text-mint',
+                 message: null },
+  maintenance: { label: 'Đang bảo trì',      badge: 'bg-mustard/30 text-ink dark:bg-mustard/20 dark:text-mustard',
+                 message: 'Công cụ này đang được bảo trì và có thể tạm thời không ổn định. Vui lòng quay lại sau nhé.' },
+  developing:  { label: 'Đang phát triển',   badge: 'bg-lavender/30 text-ink dark:bg-lavender/20 dark:text-lavender',
+                 message: 'Công cụ này đang trong quá trình phát triển, chưa sẵn sàng để sử dụng.' },
+  paused:      { label: 'Tạm dừng',          badge: 'bg-peach/30 text-ink dark:bg-peach/20 dark:text-peach',
+                 message: 'Công cụ này đang tạm dừng hoạt động. Chưa có thời điểm mở lại cụ thể.' },
+  deprecated:  { label: 'Đã dừng hỗ trợ',    badge: 'bg-stone-300/60 text-stone-700 dark:bg-stone-500/20 dark:text-stone-300',
+                 message: 'Công cụ này đã dừng hỗ trợ và không còn được cập nhật.' },
+  migrated:    { label: 'Đã chuyển công cụ khác', badge: 'bg-sky-300/40 text-sky-800 dark:bg-sky-400/20 dark:text-sky-300',
+                 message: 'Công cụ này đã ngừng hoạt động và được thay thế bằng phiên bản mới:' },
+  unlicensed:  { label: 'Chưa kích hoạt bản quyền', badge: 'bg-amber-300/40 text-amber-800 dark:bg-amber-400/20 dark:text-amber-300',
+                 message: 'Công cụ này cần liên hệ tác giả để mua hoặc thuê bản quyền trước khi có thể sử dụng đầy đủ tính năng.' },
+};
 const grid = document.getElementById('toolsGrid');
 const emptyState = document.getElementById('emptyState');
 const statCount = document.getElementById('statCount');
 const tagFiltersEl = document.getElementById('tagFilters');
 
 let activeTag = null;
+let sortMode = 'default'; // chỉ lưu trong phiên hiện tại, không lưu localStorage
+
+/* Độ tương đồng Jaccard giữa 2 bộ tag: |giao| / |hợp| (0..1, càng gần 1 càng liên quan). */
+function tagSimilarity(tagsA, tagsB) {
+  const setA = new Set(tagsA), setB = new Set(tagsB);
+  const intersection = [...setA].filter(t => setB.has(t)).length;
+  const union = new Set([...setA, ...setB]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+/* Sắp xếp "nhóm theo tag liên quan": không chỉ gom đúng tên tag giống nhau, mà mỗi bước
+   chọn tiếp mục có độ tương đồng tag (Jaccard) cao nhất với mục ngay trước đó — tạo thành
+   1 chuỗi mà các mục cạnh nhau luôn liên quan nhiều nhất có thể (giống chuỗi lân cận gần nhất). */
+function groupByRelatedTags(list) {
+  if (list.length <= 2) return list.slice();
+  const remaining = list.slice();
+  const ordered = [remaining.shift()];
+  while (remaining.length) {
+    const current = ordered[ordered.length - 1];
+    let bestIdx = 0, bestScore = -1;
+    remaining.forEach((item, idx) => {
+      const score = tagSimilarity(current.tags, item.tags);
+      if (score > bestScore) { bestScore = score; bestIdx = idx; }
+    });
+    ordered.push(remaining.splice(bestIdx, 1)[0]);
+  }
+  return ordered;
+}
+
+function sortTools(list) {
+  const arr = list.slice();
+  switch (sortMode) {
+    case 'name-asc': return arr.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+    case 'name-desc': return arr.sort((a, b) => b.name.localeCompare(a.name, 'vi'));
+    case 'updated-desc': return arr.sort((a, b) => b.updated.localeCompare(a.updated));
+    case 'updated-asc': return arr.sort((a, b) => a.updated.localeCompare(b.updated));
+    case 'created-desc': return arr.sort((a, b) => b.created.localeCompare(a.created));
+    case 'created-asc': return arr.sort((a, b) => a.created.localeCompare(b.created));
+    case 'tag-group': return groupByRelatedTags(arr);
+    default: return arr; // 'default' = giữ nguyên thứ tự khai báo trong TOOLS
+  }
+}
 
 function stripDiacritics(s) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -203,45 +335,85 @@ function stripDiacritics(s) {
 
 function toolCard(tool, idx) {
   const accent = ACCENTS[idx % ACCENTS.length];
+  const status = tool.status || 'active';
+  const meta = STATUS_META[status];
+  const isActive = status === 'active';
   const tagsHtml = tool.tags.map(t =>
     `<span class="px-2 py-0.5 rounded-full bg-${accent}/20 text-[11px] font-medium">${t}</span>`
   ).join('');
+  const cornerIcon = isActive
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 text-inkmuted dark:text-cream/40 group-hover:text-ink dark:group-hover:text-cream group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+      </svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 text-inkmuted dark:text-cream/40">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>
+      </svg>`;
+  // Tool KHÔNG active: render bằng <div> (không có href) để không lộ URL thật khi hover chuột
+  // qua thanh trạng thái trình duyệt — click vẫn hoạt động qua event delegation + role="button"
+  // giữ khả năng dùng bàn phím (Enter/Space, xem grid.addEventListener('keydown', ...)).
+  const tag = isActive ? 'a' : 'div';
+  const hrefAttr = isActive ? `href="${tool.url}"` : '';
+  const a11yAttrs = isActive ? '' : `role="button" tabindex="0"`;
   return `
-  <a href="${tool.url}" class="group fade-up relative block rounded-2xl border border-ink/10 dark:border-cream/10 bg-white/60 dark:bg-darksurface p-5
-    hover:-translate-y-1 hover:shadow-xl hover:shadow-${accent}/20 hover:border-${accent} transition-all">
-    <div class="flex items-start justify-between mb-3">
-      <div class="w-11 h-11 rounded-xl bg-${accent} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+  <${tag} ${hrefAttr} ${a11yAttrs} data-id="${tool.id}" data-status="${status}"
+    class="tool-card group fade-up relative block rounded-2xl border border-ink/10 dark:border-cream/10 bg-white/60 dark:bg-darksurface p-5 cursor-pointer
+    hover:-translate-y-1 hover:shadow-xl hover:shadow-${accent}/20 hover:border-${accent} transition-all${isActive ? '' : ' opacity-80'}">
+    <div class="flex items-start justify-between mb-3 gap-2">
+      <div class="w-11 h-11 rounded-xl bg-${accent} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform${isActive ? '' : ' grayscale-[.35]'}">
         <svg viewBox="0 0 24 24" fill="#1B5955" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd" d="M12 6.75a5.25 5.25 0 0 1 6.775-5.025.75.75 0 0 1 .313 1.248l-3.32 3.319c.063.475.276.934.641 1.299.365.365.824.578 1.3.64l3.318-3.319a.75.75 0 0 1 1.248.313 5.25 5.25 0 0 1-5.472 6.756c-1.018-.086-1.87.1-2.309.634L7.344 21.3A3.298 3.298 0 1 1 2.7 16.657l8.684-7.151c.533-.44.72-1.291.634-2.309A5.342 5.342 0 0 1 12 6.75ZM4.117 19.125a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.008a.75.75 0 0 1-.75-.75v-.008Z" clip-rule="evenodd"/>
           <path d="m10.076 8.64-2.201-2.2V4.874a.75.75 0 0 0-.364-.643l-3.75-2.25a.75.75 0 0 0-.916.113l-.75.75a.75.75 0 0 0-.113.916l2.25 3.75a.75.75 0 0 0 .643.364h1.564l2.062 2.062 1.575-1.297Z"/>
           <path fill-rule="evenodd" d="m12.556 17.329 4.183 4.182a3.375 3.375 0 0 0 4.773-4.773l-3.306-3.305a6.803 6.803 0 0 1-1.53.043c-.394-.034-.682-.006-.867.042a.589.589 0 0 0-.167.063l-3.086 3.748Zm3.414-1.36a.75.75 0 0 1 1.06 0l1.875 1.876a.75.75 0 1 1-1.06 1.06L15.97 17.03a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
         </svg>
       </div>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 text-inkmuted dark:text-cream/40 group-hover:text-ink dark:group-hover:text-cream group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-      </svg>
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        ${!isActive ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${meta.badge}">${meta.label}</span>` : ''}
+        ${cornerIcon}
+      </div>
     </div>
     <div class="font-bold mb-1">${tool.name}</div>
     <div class="text-sm text-inkmuted dark:text-cream/70 mb-3">${tool.description}</div>
     <div class="flex flex-wrap gap-1.5 mb-2">${tagsHtml}</div>
-    <div class="text-[11px] text-inkmuted/70 dark:text-cream/40">Cập nhật ${tool.updated}</div>
-  </a>`;
+    <div class="text-[11px] text-inkmuted/70 dark:text-cream/40">Tạo ${tool.created} · Cập nhật ${tool.updated}</div>
+  </${tag}>`;
 }
 
 function uniqueTags() {
   return [...new Set(TOOLS.flatMap(t => t.tags))];
 }
 
+const TAGCHIP_BASE = ['tagchip','px-3','py-1.5','rounded-full','border','text-sm','font-medium',
+  'transition-all','duration-200','ease-out','cursor-pointer',
+  'active:scale-95','focus-visible:outline-none','focus-visible:ring-2','focus-visible:ring-mint','focus-visible:ring-offset-1'];
+const TAGCHIP_ACTIVE = ['bg-ink','text-cream','border-ink','shadow-sm',
+  'dark:bg-cream','dark:text-darkbg','dark:border-cream',
+  'hover:bg-ink/90','dark:hover:bg-cream/90'];
+const TAGCHIP_INACTIVE = ['bg-white/60','text-ink','border-ink/15',
+  'dark:bg-darksurface','dark:text-cream','dark:border-cream/15',
+  'hover:bg-ink/5','hover:border-ink/30','dark:hover:bg-cream/10','dark:hover:border-cream/30'];
+
+/* Chỉ 1 trong 2 bộ class active/inactive được áp dụng — không bao giờ trộn lẫn,
+   tránh việc hover đè lên màu active gây nhấp nháy. */
+function styleTagButton(btn) {
+  const isActive = btn.dataset.tag === activeTag;
+  btn.classList.remove(...TAGCHIP_ACTIVE, ...TAGCHIP_INACTIVE);
+  btn.classList.add(...(isActive ? TAGCHIP_ACTIVE : TAGCHIP_INACTIVE));
+  btn.setAttribute('aria-pressed', String(isActive));
+}
+
 function renderTagFilters() {
   const tags = uniqueTags();
-  tagFiltersEl.innerHTML = tags.map(tag => `
-    <button data-tag="${tag}" class="tagchip px-3 py-1.5 rounded-full border border-ink/15 dark:border-cream/15 hover:bg-ink/5 dark:hover:bg-cream/10 ${activeTag === tag ? 'bg-ink text-cream dark:bg-cream dark:text-darkbg' : ''}">${tag}</button>
-  `).join('');
+  tagFiltersEl.innerHTML = tags.map(tag =>
+    `<button type="button" data-tag="${tag}" class="${TAGCHIP_BASE.join(' ')}">${tag}</button>`
+  ).join('');
   tagFiltersEl.querySelectorAll('.tagchip').forEach(btn => {
+    styleTagButton(btn);
     btn.addEventListener('click', () => {
       const tag = btn.dataset.tag;
       activeTag = activeTag === tag ? null : tag;
-      renderTagFilters();
+      // Chỉ cập nhật lại class trên các nút có sẵn — không phá/tạo lại DOM
+      // để transition mượt và không mất trạng thái hover đang có.
+      tagFiltersEl.querySelectorAll('.tagchip').forEach(styleTagButton);
       render();
     });
   });
@@ -255,18 +427,25 @@ function render() {
     const matchesTag = !activeTag || t.tags.includes(activeTag);
     return matchesQuery && matchesTag;
   });
+  const sorted = sortTools(filtered);
 
-  grid.innerHTML = filtered.map((t, i) => toolCard(t, TOOLS.indexOf(t))).join('');
+  grid.innerHTML = sorted.map(t => toolCard(t, TOOLS.indexOf(t))).join('');
   grid.querySelectorAll('.fade-up').forEach((el, i) => el.style.animationDelay = (i * 0.06) + 's');
-  emptyState.classList.toggle('hidden', filtered.length > 0);
+  emptyState.classList.toggle('hidden', sorted.length > 0);
   statCount.textContent = `🧰 ${TOOLS.length} công cụ`;
   clearSearch.classList.toggle('hidden', !searchInput.value);
 }
 
 const searchInput = document.getElementById('searchInput');
 const clearSearch = document.getElementById('clearSearch');
+const sortSelect = document.getElementById('sortSelect');
 searchInput.addEventListener('input', render);
 clearSearch.addEventListener('click', () => { searchInput.value = ''; render(); searchInput.focus(); });
+sortSelect.value = sortMode;
+sortSelect.addEventListener('change', () => {
+  sortMode = sortSelect.value;
+  render();
+});
 
 renderTagFilters();
 render();
@@ -291,6 +470,147 @@ const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
   const isDark = document.documentElement.classList.toggle('dark');
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+
+/* ===== Modal dùng chung (generic, tái sử dụng cho MỌI tính năng cần popup) =====
+   class Modal đóng gói toàn bộ DOM refs + state (this.*) và hành vi (open/close) làm 1 khối,
+   thay vì rải nhiều biến const rời rạc ở cấp module. Chỉ 2 method cần biết để dùng ở bất kỳ đâu:
+
+     modal.open({
+       badgeLabel: 'Nhãn nhỏ (tuỳ chọn)', badgeClass: 'bg-mint/25 text-ink ...',
+       title: 'Tiêu đề',
+       messageHtml: 'Nội dung (được phép chứa HTML, VD <b>...</b>)',
+       primaryLabel: 'Nhãn nút chính (tuỳ chọn — bỏ qua nếu không cần nút chính)',
+       primaryHref: 'Link nút chính (nếu primaryLabel có)',
+       secondaryLabel: 'Nhãn nút phụ (mặc định "Đã hiểu")',
+     });
+     modal.close();
+
+   Bản thân class Modal không biết gì về khái niệm "tool" hay "trạng thái" — toàn bộ kiến thức
+   đó nằm ở openStatusModal(tool) bên dưới, chỉ là 1 lớp mỏng "dịch" dữ liệu tool sang đúng
+   tham số của modal.open(). Tính năng khác trong tương lai (VD "xác nhận xoá", "thông báo lỗi
+   mạng"...) chỉ cần viết 1 lớp dịch tương tự rồi gọi modal.open({...}), không cần đụng vào class.
+   Cần nhiều modal độc lập cùng lúc? Chỉ cần new Modal({...id khác...}) thêm 1 lần nữa. */
+class Modal {
+  constructor({ backdropId, boxId, badgeId, titleId, messageId, primaryBtnId, secondaryBtnId, closeBtnId }) {
+    this.backdrop = document.getElementById(backdropId);
+    this.box = document.getElementById(boxId);
+    this.badge = document.getElementById(badgeId);
+    this.title = document.getElementById(titleId);
+    this.message = document.getElementById(messageId);
+    this.primaryBtn = document.getElementById(primaryBtnId);
+    this.secondaryBtn = document.getElementById(secondaryBtnId);
+    this.closeBtn = document.getElementById(closeBtnId);
+    this.lastFocusedEl = null;
+
+    this.closeBtn.addEventListener('click', () => this.close());
+    this.secondaryBtn.addEventListener('click', () => this.close());
+    this.backdrop.addEventListener('click', (e) => { if (e.target === this.backdrop) this.close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !this.backdrop.classList.contains('hidden')) this.close(); });
+  }
+
+  open({ badgeLabel, badgeClass, title, messageHtml, primaryLabel, primaryHref, secondaryLabel }) {
+    this.badge.textContent = badgeLabel || '';
+    this.badge.className = 'px-3 py-1 rounded-full text-xs font-semibold' + (badgeLabel ? ' ' + badgeClass : ' hidden');
+    this.title.textContent = title;
+    this.message.innerHTML = messageHtml;
+    if (primaryLabel) {
+      this.primaryBtn.href = primaryHref || '#';
+      this.primaryBtn.textContent = primaryLabel;
+      this.primaryBtn.classList.remove('hidden');
+    } else {
+      this.primaryBtn.classList.add('hidden');
+    }
+    this.secondaryBtn.textContent = secondaryLabel || 'Đã hiểu';
+
+    this.lastFocusedEl = document.activeElement;
+    this.backdrop.classList.remove('hidden');
+    this.backdrop.classList.add('flex');
+    // Ép reflow trước khi bật class "hiện" để transition mở thực sự chạy (không bị gộp
+    // chung 1 frame với lúc vừa bỏ display:none).
+    void this.backdrop.offsetWidth;
+    this.backdrop.classList.remove('opacity-0');
+    this.box.classList.remove('opacity-0', 'scale-95');
+    this.secondaryBtn.focus();
+  }
+
+  close() {
+    if (this.backdrop.classList.contains('hidden')) return;
+    this.backdrop.classList.add('opacity-0');
+    this.box.classList.add('opacity-0', 'scale-95');
+    let finished = false;
+    const finishClose = () => {
+      if (finished) return; // tránh chạy 2 lần nếu cả transitionend lẫn timeout dự phòng cùng kích hoạt
+      finished = true;
+      this.backdrop.classList.add('hidden');
+      this.backdrop.classList.remove('flex');
+      this.backdrop.removeEventListener('transitionend', onEnd);
+    };
+    const onEnd = (e) => { if (e.target === this.backdrop) finishClose(); };
+    this.backdrop.addEventListener('transitionend', onEnd);
+    setTimeout(finishClose, 250); // dự phòng nếu trình duyệt không bắn transitionend (VD prefers-reduced-motion)
+    if (this.lastFocusedEl) this.lastFocusedEl.focus();
+  }
+}
+
+const modal = new Modal({
+  backdropId: 'modalBackdrop', boxId: 'modalBox', badgeId: 'modalBadge',
+  titleId: 'modalTitle', messageId: 'modalMessage',
+  primaryBtnId: 'modalPrimaryBtn', secondaryBtnId: 'modalSecondaryBtn', closeBtnId: 'modalCloseBtn',
+});
+
+/* ===== Cách dùng cụ thể: modal thông báo trạng thái tool =====
+   Chặn điều hướng khi bấm vào tool KHÔNG ở trạng thái "active", hiện popup giải thích nhẹ nhàng thay vì chuyển link. */
+function openStatusModal(tool) {
+  const meta = STATUS_META[tool.status];
+  const hasMigration = tool.status === 'migrated' && tool.migratedTo;
+  const needsLicense = tool.status === 'unlicensed';
+  let messageHtml = meta.message;
+  let primaryLabel = null, primaryHref = null;
+
+  // Tên công cụ thay thế / thông tin liên hệ (nếu có) được in đậm trong CÂU CHỮ, không nhét
+  // vào nút — để độ dài nội dung không bao giờ làm nút bị to/xuống dòng xấu.
+  if (hasMigration) {
+    messageHtml = `${meta.message} <b>${tool.migratedTo.name}</b>.`;
+    primaryLabel = 'Xem công cụ mới →';
+    primaryHref = tool.migratedTo.url;
+  } else if (needsLicense) {
+    messageHtml = `${meta.message} Liên hệ qua email <b>${AUTHOR_CONTACT_EMAIL}</b> hoặc điện thoại <b>${AUTHOR_CONTACT_PHONE}</b>.`;
+    primaryLabel = 'Liên hệ tác giả →';
+    primaryHref = AUTHOR_CONTACT_URL;
+  }
+
+  modal.open({
+    badgeLabel: meta.label,
+    badgeClass: meta.badge,
+    title: tool.name,
+    messageHtml,
+    primaryLabel,
+    primaryHref,
+  });
+}
+
+// Event delegation: gắn 1 lần trên grid, hoạt động đúng kể cả sau khi render() vẽ lại thẻ.
+// Dùng class ".tool-card" (không phải thẻ <a>) vì tool không-active được render bằng <div>
+// (không có href) để không lộ URL thật khi hover chuột.
+grid.addEventListener('click', (e) => {
+  const card = e.target.closest('.tool-card');
+  if (!card) return;
+  const status = card.dataset.status;
+  if (status === 'active') return; // là thẻ <a> thật, để link điều hướng bình thường
+  e.preventDefault();
+  const tool = TOOLS.find(t => t.id === card.dataset.id);
+  if (tool) openStatusModal(tool);
+});
+// Thẻ không-active là <div role="button" tabindex="0">, cần tự xử lý phím Enter/Space
+// để vẫn dùng được bằng bàn phím (native <a>/<button> làm việc này tự động, <div> thì không).
+grid.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const card = e.target.closest('.tool-card');
+  if (!card || card.tagName === 'A') return;
+  e.preventDefault();
+  const tool = TOOLS.find(t => t.id === card.dataset.id);
+  if (tool) openStatusModal(tool);
 });
 </script>
 </body>
