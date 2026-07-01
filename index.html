@@ -389,7 +389,7 @@ function toolCard(tool, idx) {
 }
 
 function uniqueTags() {
-  return [...new Set(TOOLS.flatMap(t => t.tags))];
+  return [...new Set(TOOLS.flatMap(t => t.tags))].sort((a, b) => a.localeCompare(b, 'vi'));
 }
 
 const TAGCHIP_BASE = ['tagchip','px-3','py-1.5','rounded-full','border','text-sm','font-medium',
