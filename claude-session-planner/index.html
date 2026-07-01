@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<!--
+  Mô phỏng & tối ưu SO LE 2 TÀI KHOẢN Claude (cửa sổ 5 giờ) — bản tương tác v4
+  Tạo bởi: Claude (công cụ: Claude Code · model: Claude Opus 4.8)
+  Ngày tạo: 2026-06-16
+  Tính năng v4: timeline full-width; kéo thả giờ làm + 2 tài khoản trên biểu đồ;
+                toggle làm mờ ngoài giờ / nghỉ trưa; cron linh động; mẫu Prompt tạo Routine.
+-->
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mô phỏng so le 2 tài khoản Claude — v4 tương tác</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2230; --ink:#e6edf3; --muted:#9fb0c3;
+    --grid:#2b3850; --line:#39455c;
+    --work:rgba(88,166,255,.12); --lunch:rgba(255,176,32,.32); --dim:rgba(8,11,15,.7);
+    --kaopiz:#4aa3ff; --kaopizDim:#27517d; --dev:#3fd07f; --devDim:#235c3f;
+    --gold:#ffd24a; --accent:#7ee787; --bad:#ff7b72;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;padding:20px}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:21px;margin:0 0 4px} h2{font-size:16px;margin:0 0 8px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+  .accounts{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0}
+  .acc{background:var(--card);border:1px solid var(--grid);border-radius:10px;padding:9px 13px;font-size:13px}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:middle}
+  .card{background:var(--card);border:1px solid var(--grid);border-radius:12px;padding:16px;margin-bottom:14px}
+  .controls{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .ctl{display:flex;flex-direction:column;gap:6px}
+  .ctl label{font-size:12px;color:var(--muted)}
+  .ctl .val{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+  input[type=range]{width:230px}
+  #rArr{accent-color:var(--gold)} #rA{accent-color:var(--kaopiz)} #rB{accent-color:var(--dev)}
+  .presets button{background:#101826;color:var(--ink);border:1px solid var(--grid);border-radius:8px;padding:8px 12px;font-size:12.5px;cursor:pointer;margin:0 6px 6px 0}
+  .presets button:hover{background:#1f2a3a}
+  .presets button.on{background:var(--accent);color:#05130a;font-weight:700;border-color:var(--accent)}
+  .seg{display:inline-flex;border:1px solid var(--grid);border-radius:8px;overflow:hidden}
+  .seg button{background:#101826;color:var(--ink);border:0;border-right:1px solid var(--grid);padding:7px 13px;font-size:12.5px;cursor:pointer;margin:0}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:var(--gold);color:#1a1400;font-weight:700}
+  .band-ref{background:rgba(88,166,255,.05);border:1px dashed #58a6ff99}
+  .reflab{position:absolute;top:1px;font-size:9px;color:#9fc4ff;pointer-events:none}
+  input[type=range]:disabled{opacity:.35}
+  .toggles{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--muted)}
+  .toggles label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  .hint{font-size:12px;color:var(--gold);margin:6px 0 0}
+  /* timeline full-width */
+  .axis{position:relative;height:18px;border-bottom:1px solid var(--line);margin-bottom:6px}
+  .tick{position:absolute;top:0;transform:translateX(-50%);font-size:10px;color:var(--muted)}
+  .tick::after{content:"";position:absolute;left:50%;top:16px;width:1px;height:6px;background:var(--grid)}
+  .rlab{font-size:12px;margin:10px 0 3px;display:flex;justify-content:space-between;align-items:baseline}
+  .rlab .nm{font-weight:600} .rlab .meta{color:var(--muted);font-size:11.5px}
+  .track{position:relative;height:40px;width:100%;border-radius:6px;background:#0c121c;overflow:hidden}
+  .track.drag{cursor:grab} .track.drag.grabbing{cursor:grabbing}
+  .band{position:absolute;top:0;bottom:0;pointer-events:none}
+  .band-work{background:var(--work)}
+  .band-lunch{background:var(--lunch);border-left:1px solid #ffb020aa;border-right:1px solid #ffb020aa}
+  .lunchlab{position:absolute;top:1px;left:50%;transform:translateX(-50%);font-size:10px;opacity:.85;pointer-events:none}
+  .dim{background:var(--dim);z-index:6}
+  .wedge{position:absolute;top:0;bottom:0;width:2px;z-index:7}
+  .wedge.s{background:var(--accent)} .wedge.e{background:var(--bad)}
+  .startflag{position:absolute;top:-13px;transform:translateX(-50%);font-size:9.5px;font-weight:700;white-space:nowrap;z-index:9}
+  .cseg{position:absolute;top:7px;height:28px;border-radius:4px;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;z-index:3;border:1px solid rgba(255,255,255,.15)}
+  .cseg.a{background:var(--kaopiz)} .cseg.b{background:var(--dev)}
+  .cseg.idle{background:repeating-linear-gradient(45deg,#5a5a5a,#5a5a5a 6px,#383838 6px,#383838 12px);color:#ffd9d9;border:1px solid #ff7b7277;font-weight:700}
+  .cseg.lunch{background:repeating-linear-gradient(45deg,#3a2e1a,#3a2e1a 6px,#2e2414 6px,#2e2414 12px);color:#e8c98a;border-color:#ffb02055}
+  .workpill{position:absolute;top:6px;height:28px;border-radius:6px;background:linear-gradient(180deg,#1f3b5e,#16263c);border:1px solid #58a6ff66;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;color:#cfe4ff;z-index:4}
+  .workpill .grip{position:absolute;left:4px;top:50%;transform:translateY(-50%);color:#58a6ff;font-size:12px}
+  .win{position:absolute;top:6px;height:28px;border-radius:6px;font-size:10px;color:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;border:1px solid rgba(255,255,255,.22);z-index:3}
+  .win.kaopiz{background:var(--kaopiz)} .win.kaopiz.pre{background:var(--kaopizDim)}
+  .win.dev{background:var(--dev)} .win.dev.pre{background:var(--devDim)}
+  .win.gold{outline:2px solid var(--gold);outline-offset:-2px;box-shadow:0 0 9px #ffd24a88}
+  .win .use{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.30);border-right:1px solid #ffffffaa}
+  .win .lab{position:relative;z-index:2;text-shadow:0 1px 2px #0008;padding:0 3px}
+  .reset{position:absolute;top:0;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:9px solid var(--ink);z-index:5}
+  .rflagrow{position:relative;height:26px}
+  .rflag{position:absolute;top:2px;transform:translateX(-50%);font-size:10px;text-align:center}
+  .rflag .pin{display:block;width:9px;height:9px;border-radius:50%;margin:0 auto 2px}
+  .nowline{position:absolute;top:0;bottom:0;width:2px;background:#ff5252;z-index:8}
+  .nowline::after{content:"● " attr(data-t);position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:9px;color:#ff5252;white-space:nowrap}
+  /* info */
+  .stats{display:flex;gap:12px;flex-wrap:wrap}
+  .stat{background:#101826;border:1px solid var(--grid);border-radius:10px;padding:10px 14px;min-width:130px;flex:1}
+  .stat .big{font-size:20px;font-weight:700} .stat .lbl{font-size:11px;color:var(--muted)}
+  .ok{color:var(--accent)} .warn{color:var(--gold)} .ng{color:var(--bad)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;font-weight:600}
+  .pill.ok{background:#0e2a17;color:var(--accent)} .pill.ng{background:#2c1413;color:var(--bad)}
+  .detail{font-size:12.5px;color:var(--muted);margin-top:10px} .detail b{color:var(--ink)}
+  .summs{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .summ{flex:1;min-width:300px;background:#0c121c;border:1px solid var(--grid);border-radius:8px;padding:9px 12px;font-size:12.5px}
+  .summ .snm{font-weight:700;margin-bottom:5px;font-size:13px}
+  .summ .ln{margin:2px 0}
+  .muted{color:var(--muted);font-weight:400;font-size:11px}
+  /* config cards */
+  .cfgs{display:flex;gap:12px;flex-wrap:wrap}
+  .cfg{flex:1;min-width:330px;background:#0c121c;border:1px solid var(--grid);border-radius:10px;padding:12px}
+  .cfg h3{margin:0 0 8px;font-size:13.5px}
+  .cfg .field{margin-bottom:8px}
+  .cfg .k{font-size:11px;color:var(--muted)}
+  .segc{display:inline-flex;border:1px solid var(--grid);border-radius:8px;overflow:hidden;vertical-align:middle}
+  .segc button{background:#16202e;color:var(--ink);border:0;padding:6px 12px;cursor:pointer;font-size:12px}
+  .segc button.on{background:var(--kaopiz);color:#04101f;font-weight:600}
+  .crit-rank{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+  .crit-rank th,.crit-rank td{border:1px solid var(--grid);padding:4px 8px;text-align:left}
+  .crit-rank tr.best{background:rgba(56,160,255,.18)}
+  .crit-grp{margin-top:8px;font-size:12px}
+  .crit-grp summary{cursor:pointer;font-weight:600;color:#9fb3c8;padding:4px 0}
+  .crit-tbl{width:100%;border-collapse:collapse;font-size:11.5px;margin:4px 0}
+  .crit-tbl th,.crit-tbl td{border:1px solid var(--grid);padding:3px 7px;text-align:left;vertical-align:top}
+  .tier{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;font-weight:600}
+  .tier1{background:#1e3a2a;color:#7fe0a0}
+  .tier2{background:#3a341e;color:#e0c97f}
+  .tier3{background:#3a2a3a;color:#d99fd9}
+  .crit-na{color:var(--muted);font-style:italic}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#ffd9a0}
+  .copy{background:#1f2a3a;color:var(--ink);border:1px solid var(--grid);border-radius:6px;font-size:11px;padding:3px 9px;cursor:pointer;float:right}
+  .copy:hover{background:#2a3850}
+  textarea{width:100%;background:#0a0f17;color:#cfe4ff;border:1px solid var(--grid);border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:8px;resize:vertical;min-height:180px;line-height:1.6}
+  .cronline{display:flex;align-items:center;gap:8px;justify-content:space-between;background:#0a0f17;border:1px solid var(--grid);border-radius:6px;padding:6px 8px}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:6px}
+  th,td{border:1px solid var(--grid);padding:7px 9px;text-align:left} th{background:#101826;color:var(--muted)}
+  .note{font-size:12.5px;color:var(--muted);background:#13202e;border-left:3px solid var(--kaopiz);padding:10px 12px;border-radius:6px;margin-top:10px}
+  .note.risk{border-left-color:var(--bad)}
+  footer{margin-top:24px;font-size:11px;color:var(--muted);border-top:1px solid var(--grid);padding-top:12px}
+  .flash{animation:fl 1.6s ease}
+  @keyframes fl{0%{box-shadow:0 0 0 3px var(--gold)}70%{box-shadow:0 0 0 3px var(--gold)}100%{box-shadow:0 0 0 0 transparent}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mô phỏng so le 2 tài khoản Claude — v4 (tương tác)</h1>
+  <p class="sub">Cửa sổ session = 5 giờ. <b>Kéo trực tiếp</b> khối giờ làm hoặc các thanh tài khoản trên biểu đồ, hoặc dùng thanh trượt. Mọi giờ theo Việt Nam (UTC+7).</p>
+
+  <div class="accounts">
+    <div class="acc"><span class="dot" style="background:var(--kaopiz)"></span><b>HieuND Kaopiz</b> — chính (công ty) · <b>A</b></div>
+    <div class="acc"><span class="dot" style="background:var(--dev)"></span><b>Hieu88.Dev</b> — mua thêm · <b>B</b></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="card">
+    <div class="controls">
+      <div class="ctl"><label>👀 Hiển thị giờ làm</label>
+        <div class="seg" id="segMode">
+          <button data-m="ontime">Đúng giờ</button>
+          <button data-m="late">Đi muộn</button>
+          <button data-m="both">Cả hai (chồng)</button>
+        </div>
+      </div>
+      <div class="ctl"><label>🕘 Giờ đến (khi đi muộn) <span class="val" id="vArr">09:00</span></label><input type="range" id="rArr" min="8.5" max="9.5" step="0.25" value="9"></div>
+      <div class="ctl"><label>🔵 HieuND Kaopiz — neo đầu <span class="val" id="vA">05:30</span></label><input type="range" id="rA" min="3" max="9" step="0.25" value="5.5"></div>
+      <div class="ctl"><label>🟢 Hieu88.Dev — neo đầu <span class="val" id="vB">06:30</span></label><input type="range" id="rB" min="3" max="9" step="0.25" value="6.5"></div>
+      <div class="ctl"><label>🔋 Đốt hết 1 cap sau <span class="val" id="vBurnC">2h</span> (mô phỏng tiêu thụ)</label><input type="range" id="rBurnC" min="1" max="3.5" step="0.25" value="2"></div>
+    </div>
+    <div class="presets" id="presets" style="margin-top:10px">
+      <button data-p="optWork">🏆 Tối ưu giờ làm · 06:00/07:00</button>
+      <button data-p="three" class="on">⭐ 3 phiên / tài khoản (Δ=1h)</button>
+      <button data-p="even25">⭐ Đều nhịp 2.5h (không chờ)</button>
+      <button data-p="golden">Vô địch chiều (S1)</button>
+      <button data-p="even2">⭐ So le 2h · A 04:30</button>
+      <button data-p="stag1845">So le 1h45 · A 04:45</button>
+      <button data-p="stag1530">So le 1h30 · A 05:00</button>
+      <button data-p="stagB">So le 1h30b · 04:45+06:15</button>
+    </div>
+    <div class="toggles">
+      <label><input type="checkbox" id="tDimOut" checked> Làm mờ ngoài giờ làm</label>
+      <label><input type="checkbox" id="tDimLunch" checked> Làm mờ giờ nghỉ trưa</label>
+      <label><input type="checkbox" id="tLabels" checked> Hiện nhãn giờ trên thanh</label>
+      <label><input type="checkbox" id="tSim"> 🔋 Mô phỏng tiêu thụ (hàng "Tiêu thụ thực tế")</label>
+      <label><input type="checkbox" id="tAvg" checked> 📊 Chờ trung bình theo dải đốt (giảm răng cưa)</label>
+      <label><input type="checkbox" id="tCrit" checked> 🏅 Panel tiêu chí đánh giá phương án</label>
+    </div>
+    <div class="hint">💡 Kéo khối "Giờ làm" để đổi giờ đến · kéo thanh tài khoản để dời pre-warm (bước 15 phút).</div>
+  </div>
+
+  <!-- TIMELINE full width -->
+  <div class="card">
+    <div class="axis" id="axis"></div>
+    <div id="timeline"></div>
+  </div>
+
+  <!-- INFO -->
+  <div class="card">
+    <h2>📈 Chỉ số (theo cấu hình đang chọn)</h2>
+    <div class="stats" id="stats"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+
+  <!-- CRITERIA: best-plan scoring -->
+  <div class="card" id="critwrap">
+    <h2>🏅 Tiêu chí đánh giá "Phương án tốt nhất"</h2>
+    <p class="sub">Đầy đủ 7 điều kiện tiên quyết + 79 tiêu chí. Nhãn nhóm: <span class="tier tier1">1</span> tính chính xác 100% · <span class="tier tier2">2</span> tính được nhưng chưa chắc 100% (⚠ phụ thuộc mô hình cửa sổ 5h) · <span class="tier tier3">3</span> định tính. <b>Điểm tổng chỉ THAM KHẢO</b> (đã loại tiêu chí định tính; nhiều tiêu chí nhóm 2 ⚠; một số chưa có hàm tính — Giai đoạn 1 chấm ~10 tiêu chí). Xếp hạng trên các preset + cấu hình đang chọn, cập nhật theo mức đốt hiện tại.</p>
+    <div style="margin:8px 0">Kiểu gộp:
+      <span class="segc" id="segAgg">
+        <button data-g="A">A · Xếp bậc</button>
+        <button data-g="B">B · Cộng điểm</button>
+        <button data-g="C">C · Lai</button>
+      </span>
+    </div>
+    <div style="margin:6px 0"><label style="font-size:12px"><input type="checkbox" id="tGate"> ⛔ Bỏ qua điều kiện tiên quyết (xếp cả phương án &lt;06:00)</label></div>
+    <div id="critout"></div>
+  </div>
+
+  <!-- SIM -->
+  <div class="card" id="simwrap" style="display:none">
+    <h2>🔋 Mô phỏng tiêu thụ — đốt hết 1 cap sau <span id="vBurn">2h</span> rồi đổi tài khoản</h2>
+    <p class="sub">Giả định: làm liên tục (trừ trưa), dùng 1 tài khoản đến khi cạn cap thì đổi sang tài khoản kia. Cap đã đốt buổi sáng KHÔNG hồi lại buổi chiều (cùng cửa sổ). Tính trên cả 3 khung giờ của bạn. <b>★ = phương án tốt nhất</b> (làm việc nhiều nhất).</p>
+    <div class="ctl" style="max-width:300px"><label>Thời gian đốt hết 1 cap: <span class="val" id="vBurn2">2h</span></label><input type="range" id="rBurn" min="1" max="3.5" step="0.25" value="2"></div>
+    <div id="simout"></div>
+  </div>
+
+  <!-- CONFIG: cron + prompt -->
+  <div class="card">
+    <h2>⚙️ Cấu hình Routine Remote — Cron + Mẫu Prompt (sao chép & dán)</h2>
+    <div class="cfgs" id="cfgs"></div>
+  </div>
+
+  <!-- COMPARE -->
+  <div class="card">
+    <h2>📊 So sánh các phương án</h2>
+    <table>
+      <tr><th>Yếu tố</th><th>3 phiên/TK (Δ1h)</th><th>Đều nhịp 2.5h</th><th>Vô địch chiều (S1)</th></tr>
+      <tr><td>Mỗi tài khoản ≥3 phiên?</td><td class="ok">✓ 3 & 3</td><td class="warn">3 & 2</td><td class="ng">2 & 3</td></tr>
+      <tr><td>Giãn quota tươi (trừ trưa)</td><td>~3h</td><td class="ok">~2.5h</td><td>~2.5h</td></tr>
+      <tr><td>Sức mạnh buổi chiều</td><td>Cao</td><td>Cao</td><td class="ok">Cao nhất (vàng)</td></tr>
+      <tr><td>Số cửa sổ tươi/ngày</td><td class="ok">6</td><td>5</td><td>5</td></tr>
+      <tr><td>Cần kỷ luật phân vai</td><td class="ok">Không</td><td class="ok">Không</td><td class="ng">Có</td></tr>
+    </table>
+    <div class="note risk"><b>⚠️ Rủi ro:</b> dùng tài khoản công ty <b>HieuND Kaopiz</b> song song để né giới hạn có thể vi phạm điều khoản Anthropic / chính sách Kaopiz — xác nhận trước; đổi tài khoản mất ngữ cảnh; jitter ~30′ lệch nhịp; kiểm <code>/usage</code> từng tài khoản.</div>
+  </div>
+
+  <footer>Tạo bởi <b>Claude</b> · công cụ <b>Claude Code</b> · model <b>Claude Opus 4.8</b> · 2026-06-16.<br>
+  "Phiên dùng được" = cửa sổ 5h có ≥30′ trùng giờ làm (trừ nghỉ trưa). · "Giãn quota tươi" = khoảng LÀM VIỆC dài nhất giữa 2 lần reset (đã trừ trưa); <b>không phải thời gian khóa</b> — cửa sổ 5h nối liền nhau nên luôn còn cửa sổ đang mở, chỉ bị khóa thật nếu đốt cạn budget trước khi reset.</footer>
+</div>
+
+<script>
+const T0=0, T1=23, LUNCH=[12,13];
+const fmt=h=>{h=((h%24)+24)%24;const H=Math.floor(h+1e-9),M=Math.round((h-H)*60);return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0')};
+const dur=h=>{const H=Math.floor(h+1e-9),M=Math.round((h-H)*60);return (H?H+'h':'')+(M?M+'′':(H?'':'0'));};
+const pct=h=>((h-T0)/(T1-T0)*100);
+const overlap=(a,b)=>Math.max(0,Math.min(a[1],b[1])-Math.max(a[0],b[0]));
+const usable=(win,work)=>{const w=overlap(win,work);const l=overlap(win,[Math.max(work[0],LUNCH[0]),Math.min(work[1],LUNCH[1])]);return Math.max(0,w-l);};
+const firesOf=base=>[base-5,base,base+5,base+10,base+15]; // 5 mốc: mốc 5 thêm vào ĐẦU (sau nửa đêm/sáng sớm), mốc 4 ở cuối (tối)
+const sessions=(base,work)=>firesOf(base).filter(f=>usable([f,f+5],work)>=0.5).length;
+const resetsInWork=(base,work)=>firesOf(base).filter(f=>f>work[0]+1e-9 && f<work[1]-1e-9);
+function maxGap(work){let ev=[work[0],work[1],...resetsInWork(state.A,work),...resetsInWork(state.B,work)].sort((x,y)=>x-y);let g=0;for(let i=1;i<ev.length;i++){const seg=(ev[i]-ev[i-1])-overlap([ev[i-1],ev[i]],LUNCH);g=Math.max(g,seg);}return g;}
+function minSession(work){let v=Infinity;[state.A,state.B].forEach(b=>firesOf(b).forEach(f=>{const u=usable([f,f+5],work);if(u>=0.5)v=Math.min(v,u);}));return v===Infinity?0:v;}
+const uMorn=(win,work)=>overlap(win,[work[0],Math.min(12,work[1])]);
+const uAft=(win,work)=>overlap(win,[Math.max(13,work[0]),work[1]]);
+function splitTable(work){
+  let rows='';
+  [['HieuND Kaopiz',state.A,'var(--kaopiz)'],['Hieu88.Dev',state.B,'var(--dev)']].forEach(a=>{
+    firesOf(a[1]).forEach(f=>{const win=[f,f+5],m=uMorn(win,work),af=uAft(win,work);if(m+af<0.01)return;
+      const span=(m>0.01&&af>0.01);
+      const note=span?'<span class="warn">✂ xuyên trưa — phần chiều dùng tiếp quota sáng</span>':(m>0.01?'chỉ sáng':'<span class="ok">🆕 chỉ chiều (quota tươi)</span>');
+      rows+=`<tr><td><span class="dot" style="background:${a[2]}"></span>${a[0]}</td><td>${fmt(f)}–${fmt(f+5)}</td><td>${m>0.01?dur(m):'—'}</td><td>${af>0.01?dur(af):'—'}</td><td><b>${dur(m+af)}</b></td><td>${note}</td></tr>`;});
+  });
+  return `<table style="margin-top:6px"><tr><th>Tài khoản</th><th>Cửa sổ (5h)</th><th>🌅 Sáng</th><th>🌇 Chiều</th><th>Tổng dùng được</th><th>Ghi chú</th></tr>${rows}</table>`;
+}
+function summaryTable(work){
+  const accs=[['HieuND Kaopiz',state.A,'var(--kaopiz)'],['Hieu88.Dev',state.B,'var(--dev)']];
+  const data=accs.map(a=>{
+    const wins=firesOf(a[1]).map(f=>({f,m:uMorn([f,f+5],work),x:uAft([f,f+5],work)}));
+    const mor=wins.filter(w=>w.m>=0.5).map(w=>({d:w.m,f:w.f}));
+    const aft=wins.filter(w=>w.x>=0.5).map(w=>({d:w.x,f:w.f}));
+    return {nm:a[0],col:a[2],base:a[1],mor,aft};
+  });
+  const span=w=>(w.m>=0.5&&w.x>=0.5);
+  data.forEach(d=>{d.mor.forEach(w=>w.s=span(w)); d.aft.forEach(w=>w.s=span(w)); d.nwin=firesOf(d.base).filter(f=>uMorn([f,f+5],work)+uAft([f,f+5],work)>=0.5).length;});
+  const maxM=Math.max(1,...data.map(d=>d.mor.length)), maxA=Math.max(1,...data.map(d=>d.aft.length));
+  let head=`<th>Tài khoản</th>`;
+  for(let i=0;i<maxM;i++)head+=`<th>🌅 Sáng · phần ${i+1}</th>`;
+  for(let i=0;i<maxA;i++)head+=`<th>🌇 Chiều · phần ${i+1}</th>`;
+  const cell=(s,isAft)=>{ if(!s)return '<span class="muted">—</span>';
+    let tag='';
+    if(isAft) tag = (s.f>=11.999)? ' <span class="ok" title="Cửa sổ TƯƠI cho buổi chiều: bắt đầu lúc/sau nghỉ trưa nên quota còn đầy">🆕</span>' : ' <span class="warn" title="Phần chiều này dùng TIẾP quota của cửa sổ đã xài từ buổi sáng (xuyên trưa) — KHÔNG phải quota mới">↩</span>';
+    else if(s.s) tag=' <span class="warn" title="Cửa sổ xuyên trưa">✂</span>';
+    return `<b>${dur(s.d)}</b>${tag}<br><span class="muted">${fmt(s.f)}–${fmt(s.f+5)}</span>`; };
+  let rows='';
+  data.forEach(d=>{
+    let r=`<td><span class="dot" style="background:${d.col}"></span><b>${d.nm}</b><br><span class="muted">${d.nwin} cửa sổ (phiên)/ngày</span></td>`;
+    for(let i=0;i<maxM;i++)r+=`<td>${cell(d.mor[i],false)}</td>`;
+    for(let i=0;i<maxA;i++)r+=`<td>${cell(d.aft[i],true)}</td>`;
+    rows+=`<tr>${r}</tr>`;
+  });
+  return `<table style="margin-top:6px"><tr>${head}</tr>${rows}</table><div class="muted" style="margin-top:5px">⚠️ "Phần" ≠ "phiên". Buổi chiều: <b class="ok">🆕</b> = cửa sổ tươi (quota đầy, bắt đầu sau trưa) · <b class="warn">↩</b> = phần chiều của cửa sổ xuyên trưa, <b>dùng tiếp quota đã vơi từ sáng</b> (không phải quota mới). Số cửa sổ thật/ngày ghi dưới tên tài khoản.</div>`;
+}
+function cronFromBase(base){const byMin={};firesOf(base).forEach(f=>{let tot=Math.round(f*60-420+1440)%1440;let h=Math.floor(tot/60),m=tot%60;(byMin[m]=byMin[m]||[]).push(h);});return Object.keys(byMin).map(m=>`${m} ${byMin[m].sort((a,b)=>a-b).join(',')} * * *`).join('  |  ');}
+
+let state={arr:8.75, A:6.0, B:7.0, preset:'optWork', mode:'late', overlay:false, dimOut:true, dimLunch:true, labels:true, sim:true, avg:true, burn:1.5, aggMethod:'A', showCrit:true, skipGate:false};
+const SIM_SCN=[
+  {name:'Đúng giờ 08:30–17:30', work:[8.5,17.5]},
+  {name:'Sáng đúng, chiều muộn 08:30–17:45', work:[8.5,17.75]},
+  {name:'Sáng đúng, chiều muộn 08:30–18:00', work:[8.5,18]},
+  {name:'Muộn 15′ 08:45–17:45', work:[8.75,17.75]},
+  {name:'Muộn 15′ sáng, chiều muộn 08:45–18:00', work:[8.75,18]},
+  {name:'Muộn 30′ 09:00–18:00', work:[9,18]},
+  {name:'Rất muộn 09:15–18:15', work:[9.25,18.25]},
+  {name:'Rất muộn 09:30–18:30', work:[9.5,18.5]}
+];
+function simulate(Abase,Bbase,work,burn){
+  const step=1/60, fA=firesOf(Abase), fB=firesOf(Bbase); // bước 1 phút cho chính xác
+  const active=(fires,t)=>fires.some(f=>f<=t+1e-9 && t<f+5);
+  let bA=active(fA,work[0])?burn:0, bB=active(fB,work[0])?burn:0, worked=0, idle=0, cur=null, sw=0, run=0, longest=0;
+  for(let t=work[0];t<work[1]-1e-9;t+=step){
+    fA.forEach(f=>{if(Math.abs(f-t)<1e-6)bA=burn;}); // nạp token ĐÚNG lúc cửa sổ bắt đầu
+    fB.forEach(f=>{if(Math.abs(f-t)<1e-6)bB=burn;});
+    if(t>=12-1e-9 && t<13-1e-9) continue; // lunch: no work, no consume
+    let use=(cur==='A'&&bA>1e-9)?'A':(cur==='B'&&bB>1e-9)?'B':(bA>1e-9?'A':(bB>1e-9?'B':null)); // >1e-9: bỏ nhiễu floating-point
+    if(use){ if(cur!==null && use!==cur)sw++; if(use==='A')bA-=step; else bB-=step; worked+=step; cur=use; run=0; }
+    else { idle+=step; run+=step; if(run>longest)longest=run; }
+  }
+  return {worked,idle,caps:worked/burn,sw,longest};
+}
+const simWork=()=>state.mode==='ontime'?WORK_ONTIME:[state.arr,state.arr+9];
+function simSegments(Abase,Bbase,work,burn){
+  const step=1/60, fA=firesOf(Abase), fB=firesOf(Bbase); // bước 1 phút cho chính xác
+  const active=(fires,t)=>fires.some(f=>f<=t+1e-9 && t<f+5);
+  let bA=active(fA,work[0])?burn:0, bB=active(fB,work[0])?burn:0, cur=null;
+  const segs=[]; const push=(t,use)=>{const last=segs[segs.length-1]; if(last&&last.use===use){last.e=t+step;} else segs.push({s:t,e:t+step,use});};
+  for(let t=work[0];t<work[1]-1e-9;t+=step){
+    fA.forEach(f=>{if(Math.abs(f-t)<1e-6)bA=burn;}); // nạp token ĐÚNG lúc cửa sổ bắt đầu
+    fB.forEach(f=>{if(Math.abs(f-t)<1e-6)bB=burn;});
+    if(t>=12-1e-9 && t<13-1e-9){ push(t,'lunch'); continue; }
+    let use=(cur==='A'&&bA>1e-9)?'A':(cur==='B'&&bB>1e-9)?'B':(bA>1e-9?'A':(bB>1e-9?'B':null)); // >1e-9: bỏ nhiễu floating-point
+    if(use){ if(use==='A')bA-=step; else bB-=step; cur=use; push(t,use); } else push(t,'idle');
+  }
+  return segs;
+}
+function renderSim(){
+  if(!state.sim){document.getElementById('simwrap').style.display='none';return;}
+  document.getElementById('simwrap').style.display='block';
+  document.getElementById('vBurn').textContent=dur(state.burn); document.getElementById('vBurn2').textContent=dur(state.burn);
+  let h='';
+  SIM_SCN.forEach(sc=>{
+    const avail=sc.work[1]-sc.work[0]-1; // trừ 1h trưa
+    const rows=Object.keys(PRESETS).map(p=>({p,name:PRESETS[p].name,...simulate(PRESETS[p].A,PRESETS[p].B,sc.work,state.burn)}));
+    const best=Math.max(...rows.map(r=>r.worked));
+    h+=`<div class="lbl" style="font-weight:600;color:var(--ink);margin:10px 0 4px">📅 ${sc.name} <span class="muted">(làm việc tối đa ${dur(avail)})</span></div>`;
+    h+=`<table><tr><th>Phương án</th><th>Cap đốt được</th><th>Giờ làm việc thực</th><th title="Chờ hồi token (= idle): thời gian trong giờ làm mà CẢ HAI tài khoản đã cạn cap → phải chờ cửa sổ 5h reset, không làm được việc. Chỉ số quan trọng nhất, càng nhỏ càng tốt.">Chờ hồi token (tổng)</th><th title="Đợt chờ liên tục DÀI NHẤT — cú kẹt tệ nhất trong ngày. Tiêu chí #2: càng ngắn càng tốt (kẹt 1 lần 60′ tệ hơn 60′ chia nhỏ).">Lâu nhất</th><th title="Số lần chuyển qua lại giữa 2 tài khoản (khi tài khoản đang dùng cạn cap thì đổi sang cái kia). Tiêu chí phụ — càng ít càng đỡ phiền.">🔄 Đổi TK</th><th>% phủ</th></tr>`;
+    rows.forEach(r=>{const bestR=Math.abs(r.worked-best)<0.01;
+      h+=`<tr${bestR?' style="background:#0e2a17"':''}><td>${r.name}${bestR?' <b class="ok">★</b>':''}</td><td><b>${r.caps.toFixed(1)}</b></td><td>${dur(r.worked)}</td><td class="${r.idle<=0.4?'ok':(r.idle<=1.1?'warn':'ng')}">${dur(r.idle)}</td><td>${dur(r.longest)||'0'}</td><td>${r.sw} lần</td><td>${Math.round(r.worked/avail*100)}%</td></tr>`;});
+    h+=`</table>`;
+  });
+  h+=`<div class="muted" style="margin-top:6px">⚠️ "<b>Chờ hồi token</b>" (= idle) = thời gian cả 2 tài khoản cùng cạn cap, phải chờ reset → không làm được việc. Cung 2 tài khoản = 0.4 cap/giờ; cầu khi làm liên tục = ${(1/state.burn).toFixed(2)} cap/giờ. Nếu cầu &gt; cung sẽ phải chờ — phương án tốt nhất là cái <b>chờ hồi token ít nhất</b>.</div>`;
+  document.getElementById('simout').innerHTML=h;
+}
+const PRESETS={
+  three:{A:5.5,B:6.5,arr:9,name:'3 phiên / tài khoản (Δ=1h)'},
+  even25:{A:5,B:7.5,arr:9,name:'Đều nhịp 2.5h'},
+  golden:{A:3,B:5.5,arr:9,name:'Vô địch chiều (S1)'},
+  even2:{A:4.5,B:6.5,arr:9,name:'So le 2h · A 04:30'},
+  stag1845:{A:4.75,B:6.5,arr:9,name:'So le 1h45 · A 04:45'},
+  stag1530:{A:5.0,B:6.5,arr:9,name:'So le 1h30 · A 05:00'},
+  stagB:{A:4.75,B:6.25,arr:9,name:'So le 1h30b · A 04:45 / B 06:15'},
+  optWork:{A:6.0,B:7.0,arr:9,name:'Tối ưu giờ làm · A 06:00 / B 07:00'}
+};
+const WORK_ONTIME=[8.5,17.5];
+const lateWork=()=>[state.arr,state.arr+9];
+function shadeWork(){return state.mode==='ontime'?WORK_ONTIME:state.mode==='late'?lateWork():[Math.min(WORK_ONTIME[0],state.arr),Math.max(WORK_ONTIME[1],state.arr+9)];}
+function scenarios(){
+  const ot={name:'Đúng giờ (08:30–17:30)',work:WORK_ONTIME};
+  const lt={name:'Đi muộn ('+fmt(state.arr)+'–'+fmt(state.arr+9)+')',work:lateWork()};
+  return state.mode==='ontime'?[ot]:state.mode==='late'?[lt]:[ot,lt];
+}
+
+function buildAxis(){let s='';for(let h=T0;h<=T1;h++)s+=`<div class="tick" style="left:${pct(h)}%">${h}</div>`;document.getElementById('axis').innerHTML=s;}
+
+function bands(work,withLunch){
+  let h=`<div class="band band-work" style="left:${pct(work[0])}%;width:${pct(work[1])-pct(work[0])}%"></div>`;
+  if(withLunch && !state.dimLunch) h+=`<div class="band band-lunch" style="left:${pct(LUNCH[0])}%;width:${pct(LUNCH[1])-pct(LUNCH[0])}%"></div><div class="lunchlab" style="left:${pct(12.5)}%">🍜 trưa</div>`;
+  return h;
+}
+function dimOnly(work){
+  let h='';
+  if(state.dimOut){h+=`<div class="band dim" style="left:0;width:${pct(work[0])}%"></div><div class="band dim" style="left:${pct(work[1])}%;right:0"></div>`;}
+  if(state.dimLunch){h+=`<div class="band dim" style="left:${pct(LUNCH[0])}%;width:${pct(LUNCH[1])-pct(LUNCH[0])}%"></div>`;}
+  return h;
+}
+function edges(scs){return scs.map((sc,i)=>{const col=i===0?'var(--accent)':'var(--gold)';return `<div class="wedge" style="left:${pct(sc.work[0])}%;width:3px;background:${col}"></div><div class="wedge e" style="left:${pct(sc.work[1])}%"></div>`;}).join('');}
+function startFlags(scs){return scs.map((sc,i)=>{const col=i===0?'var(--accent)':'var(--gold)';const nm=scs.length>1?(i===0?'đúng giờ':'muộn'):'bắt đầu';return `<div class="startflag" style="left:${pct(sc.work[0])}%;color:${col}">▶ ${fmt(sc.work[0])} ${nm}</div>`;}).join('');}
+function nowEl(){const now=new Date(),nh=now.getHours()+now.getMinutes()/60;return (nh>=T0&&nh<=T1)?`<div class="nowline" data-t="${fmt(nh)}" style="left:${pct(nh)}%"></div>`:'';}
+
+function acctRow(nm,sm,cls,base,work,gold){
+  const rs=resetsInWork(base,work).map(fmt).join(', ')||'—';
+  let h=`<div class="rlab"><span class="nm" style="color:${cls==='kaopiz'?'var(--kaopiz)':'var(--dev)'}">${nm} <small style="color:var(--muted)">(${sm})</small></span><span class="meta">reset: ${rs}</span></div>`;
+  h+=`<div class="track drag" data-drag="${cls==='kaopiz'?'A':'B'}" data-min="3" data-max="9">`;
+  h+=bands(work,true);
+  if(state.mode==='both') h+=`<div class="band band-ref" style="left:${pct(WORK_ONTIME[0])}%;width:${pct(WORK_ONTIME[1])-pct(WORK_ONTIME[0])}%"></div>`;
+  firesOf(base).forEach(f=>{
+    const win=[f,f+5],u=usable(win,work),pre=u<0.5;
+    const isGold=gold && Math.abs(f-13)<0.6;
+    const us=[Math.max(win[0],work[0]),Math.min(win[1],work[1])];
+    let ub='';if(us[1]>us[0]){const l=(pct(us[0])-pct(f))/(pct(f+5)-pct(f))*100,wd=(pct(us[1])-pct(us[0]))/(pct(f+5)-pct(f))*100;ub=`<div class="use" style="left:${l}%;width:${wd}%"></div>`;}
+    h+=`<div class="win ${cls}${pre?' pre':''}${isGold?' gold':''}" style="left:${pct(f)}%;width:${pct(f+5)-pct(f)}%" title="${fmt(f)}–${fmt(f+5)} · dùng được ${dur(u)}">${ub}<span class="lab">${state.labels?fmt(f)+'–'+fmt(f+5)+' · '+dur(u):''}</span></div>`;
+  });
+  resetsInWork(base,work).forEach(t=>h+=`<div class="reset" style="left:${pct(t)}%"></div>`);
+  h+=dimOnly(work)+edges(scenarios())+nowEl()+`</div>`;
+  return h;
+}
+
+/* ===== Panel Tiêu chí đánh giá "Phương án tốt nhất" (Giai đoạn 1) ===== */
+const WSCN=[{w:[8.75,17.75],wt:8},{w:[8.5,17.75],wt:7},{w:[9,18],wt:6},{w:[8.5,17.5],wt:5},{w:[8.75,18],wt:4},{w:[9.25,18.25],wt:3},{w:[9.5,18.5],wt:2},{w:[8.5,18],wt:1}];
+const WSUM=WSCN.reduce((s,x)=>s+x.wt,0);
+function simCrit(A,B,work,burn){
+  const step=1/60,fA=firesOf(A),fB=firesOf(B),act=(fs,t)=>fs.some(f=>f<=t+1e-9&&t<f+5);
+  let bA=act(fA,work[0])?burn:0,bB=act(fB,work[0])?burn:0,cur=null,worked=0,idle=0,sw=0,run=0,longest=0,count=0,inrun=false,initWait=0,started=false;
+  for(let t=work[0];t<work[1]-1e-9;t+=step){
+    fA.forEach(f=>{if(Math.abs(f-t)<1e-6)bA=burn;}); fB.forEach(f=>{if(Math.abs(f-t)<1e-6)bB=burn;});
+    if(t>=12-1e-9&&t<13-1e-9)continue;
+    let use=(cur==='A'&&bA>1e-9)?'A':(cur==='B'&&bB>1e-9)?'B':(bA>1e-9?'A':(bB>1e-9?'B':null));
+    if(use){if(cur!==null&&use!==cur)sw++;if(use==='A')bA-=step;else bB-=step;worked+=step;cur=use;run=0;inrun=false;started=true;}
+    else{idle+=step;run+=step;if(run>longest)longest=run;if(!inrun){count++;inrun=true;}if(!started)initWait+=step;}
+  }
+  const lo=Math.max(work[0],12),hi=Math.min(work[1],13),worktime=(work[1]-work[0])-Math.max(0,hi-lo);
+  return {idle,longest,worked,sw,count,initWait,worktime};
+}
+function aggScen(A,B,burn){
+  let wi=0,wsw=0,wcov=0,wcnt=0,winit=0,lmax=0,b2=0,b2n=0; const idles=[];
+  WSCN.forEach(s=>{
+    const r=simCrit(A,B,s.w,burn);
+    wi+=s.wt*r.idle;wsw+=s.wt*r.sw;wcov+=s.wt*(r.worked/r.worktime);wcnt+=s.wt*r.count;winit+=s.wt*r.initWait;
+    if(r.longest>lmax)lmax=r.longest; idles.push({i:r.idle,wt:s.wt});
+    for(let bn=1.25;bn<=2.0+1e-9;bn+=0.1){b2+=s.wt*simCrit(A,B,s.w,bn).idle;b2n+=s.wt;}
+  });
+  const mean=wi/WSUM; let varw=0; idles.forEach(x=>varw+=x.wt*(x.i-mean)*(x.i-mean)); varw/=WSUM;
+  return {A1:mean,A2:lmax,A3:wcov/WSUM,A6:wcnt/WSUM,A7:winit/WSUM,D1:wsw/WSUM,B6:Math.sqrt(varw),B2:b2/b2n};
+}
+const CALC={A1:p=>p.ag.A1,A2:p=>p.ag.A2,A3:p=>p.ag.A3,A6:p=>p.ag.A6,A7:p=>p.ag.A7,D1:p=>p.ag.D1,B6:p=>p.ag.B6,B2:p=>p.ag.B2,D3:p=>Math.abs(Math.abs(p.A-p.B)-1.0),F2:()=>10};
+const CDIR={A1:'low',A2:'low',A3:'high',A6:'low',A7:'low',D1:'low',B6:'low',B2:'low',D3:'low',F2:'low'};
+const GATES=[
+  {id:'Đ1',name:'Hợp lệ điều khoản Anthropic',desc:'Cách dùng pre-warm không vi phạm Điều khoản sử dụng của Anthropic (không bị coi là lạm dụng hay gian lận giới hạn). Nếu vi phạm → loại ngay, dù chỉ số đẹp tới đâu.'},
+  {id:'Đ2',name:'Hợp lệ chính sách công ty',desc:'Tài khoản HieuND Kaopiz là của công ty → dùng để pre-warm phải được công ty cho phép, không vi phạm chính sách nội bộ.'},
+  {id:'Đ3',name:'Tạo được bằng Routine Remote (cloud)',desc:'Routine phải là loại CLOUD (chạy trên máy chủ Anthropic), KHÔNG phải scheduled-task local — để vẫn nổ đúng giờ kể cả khi máy tính tắt.'},
+  {id:'Đ4',name:'Cron hợp lệ + đúng múi giờ',desc:'Biểu thức cron đúng cú pháp và quy đổi UTC ↔ giờ Việt Nam chính xác, để mốc nổ đúng thời điểm mong muốn. (⚠ giả định cron lưu theo UTC chưa xác thực 100%.)'},
+  {id:'Đ5',name:'Mốc neo sáng ≥ 06:00',desc:'Mốc pre-warm buổi sáng phải đủ muộn (≥06:00) để cửa sổ 5h của đêm trước đã kết thúc → mốc THỰC SỰ tạo phiên mới, không bị "nuốt" vào cửa sổ đang chạy. (⚠ dựa trên mô hình cửa sổ 5h.)'},
+  {id:'Đ6',name:'Có ≥1 cap tươi lúc bắt đầu làm',desc:'Khi đến công ty, ít nhất 1 trong 2 tài khoản đã có cửa sổ đang mở (cap dùng ngay), không phải chờ ngay từ đầu.'},
+  {id:'Đ7',name:'Khả thi cung/cầu',desc:'Tổng lượng cap khả dụng trong giờ làm ≥ nhu cầu làm việc. Nếu cung < cầu thì kiểu gì cũng phải chờ → phương án bất khả thi.'}];
+const CRIT=[
+  {id:'A1',grp:'A',name:'Tổng Chờ hồi token (nhân tỉ trọng kịch bản)',w:10,tier:2},
+  {id:'A2',grp:'A',name:'Chờ hồi token lâu nhất',w:7,tier:2},
+  {id:'A3',grp:'A',name:'Tỉ lệ phủ giờ làm (worked/giờ làm)',w:6,tier:2},
+  {id:'A4',grp:'A',name:'Phân bố chờ theo buổi (tránh chờ buổi chiều)',w:3,tier:2},
+  {id:'A5',grp:'A',name:'Thời điểm đợt chờ đầu tiên (càng muộn càng tốt)',w:2,tier:2},
+  {id:'A6',grp:'A',name:'Số đợt Chờ hồi token',w:2,tier:2},
+  {id:'A7',grp:'A',name:'Độ trễ tới cap đầu tiên khi đến công ty',w:4,tier:2},
+  {id:'A8',grp:'A',name:'Độ phủ liên tục dài nhất',w:2,tier:2},
+  {id:'A9',grp:'A',name:'Tần suất "cả 2 tài khoản cùng cạn"',w:3,tier:2},
+  {id:'A10',grp:'A',name:'Độ phủ cuối ngày (làm thêm được không)',w:2,tier:2},
+  {id:'A11',grp:'A',name:'Độ trễ phục hồi sau khi cạn cả 2',w:2,tier:2},
+  {id:'A12',grp:'A',name:'Tỉ lệ thời gian có ≥1 cap',w:3,tier:2},
+  {id:'A13',grp:'A',name:'Phương sai độ dài các phiên (phụ)',w:1,tier:2},
+  {id:'A14',grp:'A',name:'Tỉ lệ phiên "trọn vẹn" (phụ)',w:1,tier:2},
+  {id:'A15',grp:'A',name:'Cân đối thời gian làm trước/sau trưa (phụ)',w:1,tier:2},
+  {id:'A16',grp:'A',name:'Khoảng cách trung bình giữa các đợt chờ (phụ)',w:1,tier:2},
+  {id:'B1',grp:'B',name:'Bền trước giờ đến lệch',w:5,tier:2},
+  {id:'B2',grp:'B',name:'Bền trước tốc độ đốt (răng cưa / Chờ TB dải đốt)',w:5,tier:2},
+  {id:'B3',grp:'B',name:'Biên an toàn mốc neo sáng',w:6,tier:2},
+  {id:'B4',grp:'B',name:'Bền trước jitter routine',w:3,tier:2},
+  {id:'B5',grp:'B',name:'Bền khi lỡ/quên 1 mốc',w:3,tier:2},
+  {id:'B6',grp:'B',name:'Độ ổn định giữa các kịch bản (phương sai chờ thấp)',w:4,tier:2},
+  {id:'B7',grp:'B',name:'Bền khi đi làm rất sớm (08:00)',w:1,tier:2},
+  {id:'B8',grp:'B',name:'Bền khi về muộn/làm thêm (18:30+)',w:1,tier:2},
+  {id:'B9',grp:'B',name:'Bền khi giờ nghỉ trưa đổi (11:30–13:00)',w:1,tier:2},
+  {id:'B10',grp:'B',name:'Số lần phải "chủ động gửi tin sáng"',w:2,tier:2},
+  {id:'B11',grp:'B',name:'Mức tải đỉnh trên 1 tài khoản',w:1,tier:2},
+  {id:'B12',grp:'B',name:'Nhạy với sai số ước lượng tốc độ đốt',w:2,tier:2},
+  {id:'C1',grp:'C',name:'Mỗi buổi đều có ≥2 phiên',w:3,tier:2},
+  {id:'C2',grp:'C',name:'Số cửa sổ quota tươi trong giờ làm',w:3,tier:2},
+  {id:'C3',grp:'C',name:'Ít lãng phí cap',w:3,tier:2},
+  {id:'C4',grp:'C',name:'Đủ cap cho buổi chiều (nặng hơn)',w:3,tier:2},
+  {id:'C5',grp:'C',name:'Biên cung/cầu',w:3,tier:2},
+  {id:'C6',grp:'C',name:'Tận dụng cap xuyên trưa',w:2,tier:2},
+  {id:'C7',grp:'C',name:'Mức chồng lấn cửa sổ 2 tài khoản',w:3,tier:2},
+  {id:'C8',grp:'C',name:'Số mốc "vô dụng" (cửa sổ nổ không dùng)',w:2,tier:2},
+  {id:'C9',grp:'C',name:'Cap bỏ phí buổi tối/đêm',w:1,tier:2},
+  {id:'C10',grp:'C',name:'Độ "dày" cap quanh điểm chuyển giao',w:2,tier:2},
+  {id:'C11',grp:'C',name:'Phủ qua đêm cho buổi sáng',w:2,tier:2},
+  {id:'C12',grp:'C',name:'Số cap tươi trung bình sẵn sàng mỗi thời điểm',w:2,tier:2},
+  {id:'C13',grp:'C',name:'Đệm cap tới giờ về (end buffer)',w:1,tier:2},
+  {id:'C14',grp:'C',name:'Số "khoảng hở suýt xảy ra" (near-miss <10′)',w:2,tier:2},
+  {id:'C15',grp:'C',name:'Số phút cả 2 tài khoản cùng còn cap (phụ)',w:1,tier:2},
+  {id:'C16',grp:'C',name:'Hiệu suất dùng cap (cap dùng/cap cấp) (phụ)',w:2,tier:2},
+  {id:'C17',grp:'C',name:'Độ phủ "giờ vàng" hiệu suất cao (phụ)',w:1,tier:2},
+  {id:'D1',grp:'D',name:'Số lần Đổi tài khoản',w:4,tier:2},
+  {id:'D2',grp:'D',name:'Đơn giản / dễ nhớ (giờ tròn)',w:2,tier:3},
+  {id:'D3',grp:'D',name:'Δ giữa 2 tài khoản hợp lý (~1h)',w:2,tier:1},
+  {id:'D4',grp:'D',name:'Giãn đều mốc',w:2,tier:1},
+  {id:'D5',grp:'D',name:'Cân bằng tải 2 tài khoản',w:1,tier:2},
+  {id:'D6',grp:'D',name:'Số mốc/cron phải quản lý',w:1,tier:1},
+  {id:'D7',grp:'D',name:'Nhất quán / dễ dự đoán',w:1,tier:3},
+  {id:'D8',grp:'D',name:'Tính đối xứng sáng/chiều',w:1,tier:1},
+  {id:'D9',grp:'D',name:'Dễ debug / kiểm tra mốc nào nổ',w:1,tier:3},
+  {id:'D10',grp:'D',name:'Số lần chuyển TK ngay sau nghỉ trưa (phụ)',w:1,tier:2},
+  {id:'D11',grp:'D',name:'Độ thẳng hàng với giờ tròn (phụ)',w:1,tier:1},
+  {id:'D12',grp:'D',name:'Số thao tác thủ công/ngày (phụ)',w:1,tier:2},
+  {id:'E1',grp:'E',name:'Rủi ro bị xem là lách giới hạn',w:2,tier:3},
+  {id:'E2',grp:'E',name:'Rủi ro chính sách công ty',w:2,tier:3},
+  {id:'E3',grp:'E',name:'Rủi ro phụ thuộc 1 tài khoản',w:1,tier:3},
+  {id:'E4',grp:'E',name:'Rủi ro mốc đêm bị nuốt nếu tối dùng khuya',w:1,tier:2},
+  {id:'E5',grp:'E',name:'Rủi ro nổ ngày nghỉ/cuối tuần',w:1,tier:1},
+  {id:'E6',grp:'E',name:'Rủi ro lệ thuộc đồng hồ/cron Anthropic',w:1,tier:3},
+  {id:'E7',grp:'E',name:'Rủi ro Anthropic đổi chính sách cửa sổ 5h',w:1,tier:3},
+  {id:'E8',grp:'E',name:'Rủi ro lộ tên tài khoản cá nhân trong routine công ty',w:1,tier:3},
+  {id:'E9',grp:'E',name:'Rủi ro khi công ty audit log routine',w:1,tier:3},
+  {id:'F1',grp:'F',name:'Chi phí token pre-warm',w:1,tier:2},
+  {id:'F2',grp:'F',name:'Số lần nổ routine/ngày',w:1,tier:1},
+  {id:'F3',grp:'F',name:'Pre-warm có "ăn" budget làm việc không',w:1,tier:2},
+  {id:'F4',grp:'F',name:'Tổng token pre-warm/tháng',w:1,tier:2},
+  {id:'G1',grp:'G',name:'Linh hoạt khi đổi giờ làm',w:1,tier:3},
+  {id:'G2',grp:'G',name:'Khả năng mở rộng (thêm TK thứ 3)',w:1,tier:3},
+  {id:'G3',grp:'G',name:'Dễ bảo trì / điều chỉnh cron',w:1,tier:3},
+  {id:'G4',grp:'G',name:'Tương thích nhiều múi giờ',w:1,tier:3},
+  {id:'G5',grp:'G',name:'Xử lý giờ mùa hè (DST) khi đi nước ngoài',w:1,tier:3},
+  {id:'H1',grp:'H',name:'Đã kiểm chứng bằng mô phỏng',w:1,tier:3},
+  {id:'H2',grp:'H',name:'Giải thích được / minh bạch',w:1,tier:3},
+  {id:'H3',grp:'H',name:'Mức độ tài liệu hoá phương án (phụ)',w:1,tier:3},
+  {id:'H4',grp:'H',name:'Khả năng tái lập kết quả mô phỏng (phụ)',w:1,tier:3}
+];
+function renderCriteria(){
+  const wrap=document.getElementById('critwrap'); if(!wrap)return;
+  wrap.style.display=state.showCrit?'':'none';
+  if(!state.showCrit)return;
+  const cands=Object.keys(PRESETS).map(k=>({key:k,name:PRESETS[k].name,A:PRESETS[k].A,B:PRESETS[k].B}));
+  const dup=cands.find(p=>Math.abs(p.A-state.A)<1e-9&&Math.abs(p.B-state.B)<1e-9); // nếu "đang chọn" trùng preset → không thêm dòng trùng
+  if(dup){dup.cur=true;dup.name='★ '+dup.name+' (đang chọn)';}
+  else cands.push({key:'__cur',name:'★ Đang chọn ('+fmt(state.A)+' / '+fmt(state.B)+')',A:state.A,B:state.B,cur:true});
+  cands.forEach(p=>p.ag=aggScen(p.A,p.B,state.burn));
+  // Cổng tính được: loại phương án trượt (Đ5 mốc sáng ≥06:00; Đ6 có cap lúc bắt đầu)
+  const gateFail=p=>{const f=[];if(Math.min(p.A,p.B)<6.0-1e-9)f.push('Đ5');const w0=8.75,act=b=>firesOf(b).some(x=>x<=w0+1e-9&&w0<x+5);if(!(act(p.A)||act(p.B)))f.push('Đ6');return f;};
+  cands.forEach(p=>p.fail=gateFail(p));
+  const elig= state.skipGate ? cands : cands.filter(p=>p.fail.length===0);
+  const inelig= state.skipGate ? [] : cands.filter(p=>p.fail.length>0);
+  const calcIds=CRIT.filter(c=>CALC[c.id]).map(c=>({id:c.id,w:c.w}));
+  const raws={}; calcIds.forEach(c=>{raws[c.id]=elig.map(p=>CALC[c.id](p));});
+  function norm(id,v){const arr=raws[id];if(!arr.length)return 100;const mn=Math.min(...arr),mx=Math.max(...arr);if(mx-mn<1e-9)return 100;return CDIR[id]==='low'?(mx-v)/(mx-mn)*100:(v-mn)/(mx-mn)*100;}
+  const wTot=calcIds.reduce((s,c)=>s+c.w,0);
+  function scoreB(p){let s=0;calcIds.forEach(c=>{s+=c.w*norm(c.id,CALC[c.id](p));});return s/wTot;}
+  const order=[...calcIds].sort((a,b)=>b.w-a.w||(a.id<b.id?-1:1)); const THR=2/60;
+  function cmpA(p,q){for(const c of order){const pv=CALC[c.id](p),qv=CALC[c.id](q);if(Math.abs(pv-qv)>THR)return CDIR[c.id]==='low'?(pv-qv):(qv-pv);}return scoreB(q)-scoreB(p);}
+  let ranked;
+  if(state.aggMethod==='B') ranked=[...elig].sort((p,q)=>scoreB(q)-scoreB(p));
+  else if(state.aggMethod==='A') ranked=[...elig].sort(cmpA);
+  else ranked=[...elig].sort((p,q)=>{const d=p.ag.A1-q.ag.A1; if(Math.abs(d)>THR)return d; return scoreB(q)-scoreB(p);});
+  const showScore=state.aggMethod!=='A';
+  let h='<table class="crit-rank"><tr><th>#</th><th>Phương án</th>'+(showScore?'<th>Điểm</th>':'')+'<th>Tổng chờ</th><th>Lâu nhất</th><th>Đổi TK</th></tr>';
+  ranked.forEach((p,i)=>{const warn=p.fail.length?` <span style="color:#e0a14a" title="Trượt điều kiện tiên quyết ${p.fail.join(', ')} — đang bỏ qua">⚠${p.fail.join(',')}</span>`:'';h+=`<tr class="${i===0?'best':''}"><td>${i+1}</td><td>${p.name}${warn}</td>${showScore?`<td><b>${scoreB(p).toFixed(1)}</b></td>`:''}<td>${dur(p.ag.A1)||'0'}</td><td>${dur(p.ag.A2)||'0'}</td><td>${p.ag.D1.toFixed(1)}</td></tr>`;});
+  inelig.forEach(p=>{h+=`<tr style="opacity:.5"><td>⛔</td><td>${p.name}</td>${showScore?'<td>—</td>':''}<td colspan="3">Loại — trượt điều kiện ${p.fail.join(', ')} (mốc sáng &lt; 06:00)</td></tr>`;});
+  h+='</table>';
+  const cur=cands.find(p=>p.cur);
+  const fmtVal=(id,v)=>{if(id==='A3')return (v*100).toFixed(0)+'%';if(id==='D1'||id==='A6')return v.toFixed(1);if(id==='D3')return 'lệch '+dur(v);if(id==='F2')return v+' lần';return dur(v)||'0';};
+  h+=`<details class="crit-grp"><summary>⛔ Điều kiện tiên quyết (7) — pass/fail, không trọng số${state.skipGate?' · ĐANG BỎ QUA':''}</summary><table class="crit-tbl"><tr><th>Mã</th><th>Điều kiện</th><th>Giải thích</th></tr>`;
+  GATES.forEach(g=>{h+=`<tr><td>${g.id}</td><td>${g.name}</td><td>${g.desc}</td></tr>`;}); h+='</table></details>';
+  const grps={A:'A · Hiệu quả giờ làm',B:'B · Độ bền / ổn định',C:'C · Phủ & tận dụng quota',D:'D · Thao tác & con người',E:'E · Rủi ro',F:'F · Chi phí',G:'G · Linh hoạt & tương lai',H:'H · Minh bạch & kiểm chứng'};
+  Object.keys(grps).forEach(G=>{
+    const items=CRIT.filter(c=>c.grp===G);
+    h+=`<details class="crit-grp"><summary>${grps[G]} (${items.length} tiêu chí)</summary><table class="crit-tbl"><tr><th>Mã</th><th>Tiêu chí</th><th>TS</th><th>Nhóm</th><th>Giá trị (đang chọn)</th></tr>`;
+    items.forEach(c=>{
+      let val;
+      if(CALC[c.id]){const v=CALC[c.id](cur);val=`${fmtVal(c.id,v)} · điểm ${norm(c.id,v).toFixed(0)}`;}
+      else if(c.tier===3) val='<span class="crit-na">— định tính</span>';
+      else val='<span class="crit-na">chưa tính điểm</span>';
+      h+=`<tr><td>${c.id}</td><td>${c.name}</td><td>${c.w}</td><td><span class="tier tier${c.tier}">${c.tier}</span></td><td>${val}</td></tr>`;
+    });
+    h+='</table></details>';
+  });
+  document.getElementById('critout').innerHTML=h;
+}
+function render(){
+  const sw=shadeWork(), scs=scenarios();
+  let h='';
+  // work ruler row
+  h+=`<div class="rlab"><span class="nm">🕘 Khung giờ làm</span><span class="meta">${scs.map(s=>s.name).join('  +  ')} · nghỉ trưa 12:00–13:00${state.mode!=='ontime'?' · kéo khối để đổi giờ đến':''}</span></div>`;
+  h+=`<div class="track">${bands(sw,true)}`;
+  if(state.mode==='both'){h+=`<div class="band band-ref" style="left:${pct(WORK_ONTIME[0])}%;width:${pct(WORK_ONTIME[1])-pct(WORK_ONTIME[0])}%"></div><div class="reflab" style="left:${pct(8.7)}%">đúng giờ</div>`;}
+  if(state.mode==='ontime'){
+    h+=`<div class="workpill" style="left:${pct(WORK_ONTIME[0])}%;width:${pct(WORK_ONTIME[1])-pct(WORK_ONTIME[0])}%;cursor:default">${fmt(WORK_ONTIME[0])}–${fmt(WORK_ONTIME[1])}</div>`;
+  }else{
+    const lw=lateWork();
+    h+=`<div class="workpill drag" data-drag="arr" data-min="8.5" data-max="9.5" style="left:${pct(lw[0])}%;width:${pct(lw[1])-pct(lw[0])}%"><span class="grip">⋮⋮</span>${state.mode==='both'?'muộn ':''}${fmt(lw[0])}–${fmt(lw[1])}</div>`;
+  }
+  h+=startFlags(scs)+edges(scs)+nowEl()+`</div>`;
+  // account rows (shade against union)
+  h+=acctRow('HieuND Kaopiz','A · chính','kaopiz',state.A,sw,state.preset==='golden');
+  h+=acctRow('Hieu88.Dev','B · mua thêm','dev',state.B,sw,false);
+  // reset row
+  const comb=[...resetsInWork(state.A,sw).map(t=>[t,'var(--kaopiz)']),...resetsInWork(state.B,sw).map(t=>[t,'var(--dev)'])].sort((a,b)=>a[0]-b[0]);
+  h+=`<div class="rlab"><span class="nm">⏱ Mốc reset trong ngày</span><span class="meta">${comb.map(c=>fmt(c[0])).join(' → ')||'—'}</span></div>`;
+  h+=`<div class="track"><div class="rflagrow">`;
+  comb.forEach(c=>h+=`<div class="rflag" style="left:${pct(c[0])}%"><span class="pin" style="background:${c[1]}"></span>${fmt(c[0])}</div>`);
+  h+=`</div>${nowEl()}</div>`;
+  // consumption row (khi bật mô phỏng tiêu thụ)
+  if(state.sim){
+    const w=simWork(), segs=simSegments(state.A,state.B,w,state.burn);
+    const idleSegs=segs.filter(s=>s.use==='idle');
+    const idleTot=idleSegs.reduce((n,s)=>n+(s.e-s.s),0);
+    const idleMax=idleSegs.reduce((m,s)=>Math.max(m,s.e-s.s),0);
+    const idleCnt=idleSegs.length;
+    const workedTot=segs.filter(s=>s.use==='A'||s.use==='B').reduce((n,s)=>n+(s.e-s.s),0);
+    let swTot=0, lastAcc=null; segs.forEach(s=>{ if(s.use==='A'||s.use==='B'){ if(lastAcc!==null && s.use!==lastAcc) swTot++; lastAcc=s.use; } });
+    // ① Chờ TB theo dải đốt 1h15–2h00 (san phẳng "răng cưa") + ② chú thích — bật/tắt bằng checkbox tAvg
+    let avgPart='';
+    if(state.avg){
+      let aSum=0, aMax=0, aN=0;
+      for(let bn=1.25; bn<=2.0+1e-9; bn+=0.05){ const id=simulate(state.A,state.B,w,bn).idle; aSum+=id; if(id>aMax)aMax=id; aN++; }
+      const aAvg=aSum/aN;
+      avgPart=` · <span title="Chờ hồi token có hiện tượng 'răng cưa' — rất nhạy với mức đốt chính xác (lệch 15′ có thể nhảy từ 0 lên 30′). Con số này là TRUNG BÌNH thời gian chờ khi mức đốt dao động trong dải 1h15–2h00, phản ánh thực tế tốt hơn một giá trị đơn lẻ. Đỉnh trong dải: ${dur(aMax)||'0'}.">📊 Chờ TB dải đốt</span>: <b class="${aAvg<=0.4?'ok':(aAvg<=1.1?'warn':'ng')}">${dur(aAvg)||'0'}</b>`;
+    }
+    h+=`<div class="rlab"><span class="nm">🔋 Tiêu thụ thực tế <span class="muted">(đốt ${dur(state.burn)}/cap · ${state.mode==='ontime'?'đúng giờ 08:30':'đến '+fmt(w[0])})</span></span><span class="meta">Làm: <b class="ok">${dur(workedTot)}</b> · <span title="Chờ hồi token (= idle): thời gian cả 2 tài khoản cạn cap, phải chờ cửa sổ 5h reset → không làm được việc. Càng nhỏ càng tốt.">⏸ Chờ hồi token</span>: <b class="${idleTot<=0.4?'ok':(idleTot<=1.1?'warn':'ng')}">${dur(idleTot)||'0'}</b> <span class="muted">(lâu nhất ${dur(idleMax)||'0'} · ${idleCnt} lần)</span> · <span title="Số lần chuyển qua lại giữa 2 tài khoản.">🔄 Đổi TK</span>: <b>${swTot} lần</b>${avgPart}</span></div>`;
+    h+=`<div class="track">`;
+    segs.forEach(s=>{const cls=s.use==='A'?'a':s.use==='B'?'b':s.use; const lbl=s.use==='idle'?'⏸ chờ':s.use==='lunch'?'🍜':s.use==='A'?'HieuND':'Hieu88'; const wide=(s.e-s.s)>=0.7;
+      h+=`<div class="cseg ${cls}" style="left:${pct(s.s)}%;width:${pct(s.e)-pct(s.s)}%" title="${fmt(s.s)}–${fmt(s.e)} · ${lbl}">${wide?lbl:''}</div>`;});
+    h+=`${nowEl()}</div>`;
+  }
+  document.getElementById('timeline').innerHTML=h;
+  document.querySelectorAll('.drag').forEach(el=>el.addEventListener('mousedown',onDown));
+
+  // info: offset + per-scenario detail
+  const delta=Math.abs(state.A-state.B);
+  let st=`<div class="detail" style="margin:0 0 12px;border:0;padding:0">
+    <b>↔ Độ lệch 2 tài khoản:</b> Δ = <b class="warn">${dur(delta)||'0'}</b> &nbsp;·&nbsp;
+    <b>Phương án:</b> ${PRESETS[state.preset]?PRESETS[state.preset].name:'Tùy chỉnh'} &nbsp;·&nbsp;
+    <span style="color:var(--kaopiz)">HieuND neo ${firesOf(state.A).map(fmt).join(' / ')}</span> &nbsp;·&nbsp;
+    <span style="color:var(--dev)">Hieu88 neo ${firesOf(state.B).map(fmt).join(' / ')}</span>
+  </div>`;
+  scs.forEach(sc=>{
+    const sa=sessions(state.A,sc.work),sb=sessions(state.B,sc.work),gap=maxGap(sc.work),ok=(sa>=3&&sb>=3);
+    const rc=resetsInWork(state.A,sc.work).length+resetsInWork(state.B,sc.work).length, ms=minSession(sc.work);
+    const fa=[state.A,state.B].reduce((n,b)=>n+firesOf(b).filter(f=>f>=11.999 && uAft([f,f+5],sc.work)>=0.5).length,0);
+    const smA=firesOf(state.A).filter(f=>uMorn([f,f+5],sc.work)>=0.5).length, saA=firesOf(state.A).filter(f=>uAft([f,f+5],sc.work)>=0.5).length;
+    const smB=firesOf(state.B).filter(f=>uMorn([f,f+5],sc.work)>=0.5).length, saB=firesOf(state.B).filter(f=>uAft([f,f+5],sc.work)>=0.5).length;
+    st+=`<div style="margin-bottom:16px"><div class="lbl" style="font-weight:600;color:var(--ink);margin-bottom:6px">📅 ${sc.name}</div>
+      <div class="stats">
+        <div class="stat"><div class="lbl">HieuND tổng</div><div class="big ${sa>=3?'ok':'ng'}">${sa}</div><div class="lbl">phiên/ngày</div></div>
+        <div class="stat"><div class="lbl">Hieu88 tổng</div><div class="big ${sb>=3?'ok':'ng'}">${sb}</div><div class="lbl">phiên/ngày</div></div>
+        <div class="stat"><div class="lbl">🌅 Buổi sáng</div><div class="big">${smA}+${smB}</div><div class="lbl">HieuND + Hieu88</div></div>
+        <div class="stat"><div class="lbl">🌇 Buổi chiều</div><div class="big">${saA}+${saB}</div><div class="lbl">HieuND + Hieu88</div></div>
+        <div class="stat" title="Số cửa sổ TƯƠI cho buổi chiều (bắt đầu lúc/sau nghỉ trưa → quota đầy). KHÔNG tính phần xuyên trưa dùng tiếp quota sáng. Đây mới là 'sức mạnh chiều' thật."><div class="lbl">🆕 Tươi cho chiều</div><div class="big ${fa>=1?'ok':'warn'}">${fa}</div><div class="lbl">cửa sổ quota đầy</div></div>
+        <div class="stat"><div class="lbl">≥3 mỗi TK</div><div style="margin-top:8px"><span class="pill ${ok?'ok':'ng'}">${ok?'✓ Đạt':'✗ Chưa'}</span></div></div>
+        <div class="stat" title="Số lần có cửa sổ MỚI (quota tươi) bắt đầu trong giờ làm — tính cả 2 tài khoản"><div class="lbl">🔄 Lần quota tươi</div><div class="big">${rc}</div><div class="lbl">trong giờ làm</div></div>
+        <div class="stat" title="Khoảng LÀM VIỆC dài nhất giữa 2 lần quota tươi (ĐÃ trừ nghỉ trưa). KHÔNG phải thời gian khóa — luôn còn cửa sổ đang mở; chỉ là khoảng lâu nhất chưa có bầu quota mới."><div class="lbl">⏳ Giãn quota tươi</div><div class="big ${gap<=2.6?'ok':(gap<=3.6?'warn':'ng')}">${dur(gap)}</div><div class="lbl">trừ trưa · lớn nhất</div></div>
+        <div class="stat" title="Cửa sổ dùng được ngắn nhất — cảnh báo phiên quá ngắn (<1h) ít hữu ích"><div class="lbl">⚠️ Phiên ngắn nhất</div><div class="big ${ms>=1?'ok':'warn'}">${dur(ms)}</div><div class="lbl">dùng được</div></div>
+      </div>
+      <div class="lbl" style="margin-top:10px;font-weight:600;color:var(--ink)">📋 Tóm tắt theo buổi</div>
+      ${summaryTable(sc.work)}
+      <div class="lbl" style="margin-top:10px;font-weight:600;color:var(--ink)">🔍 Chi tiết từng cửa sổ</div>
+      ${splitTable(sc.work)}
+    </div>`;
+  });
+  const statsEl=document.getElementById('stats'); statsEl.style.display='block'; statsEl.innerHTML=st;
+  document.getElementById('detail').innerHTML='';
+
+  renderCfg();
+  renderSim();
+  renderCriteria();
+  syncUI();
+}
+
+function renderCfg(){
+  const apr = PRESETS[state.preset]?PRESETS[state.preset].name:'Tùy chỉnh';
+  const data=[
+    {acc:'HieuND Kaopiz', rn:'Pre-warm phiên Claude', base:state.A, color:'var(--kaopiz)'},
+    {acc:'Hieu88.Dev', rn:'Pre-warm phiên Claude', base:state.B, color:'var(--dev)'},
+  ];
+  let h='';
+  data.forEach((d,i)=>{
+    const cron=cronFromBase(d.base), firesVN=firesOf(d.base).map(fmt).join(', ');
+    const prompt=`Tạo Routine Remote (routine cloud — chạy trên máy chủ, chạy cả khi máy tắt; KHÔNG phải local), không cần repository.\n\nTên: ${d.rn}.\nPrompt: Hiển thị "Xin chào".\nModel: Haiku.\nLịch chạy: mỗi ngày lúc ${firesVN} (giờ Việt Nam).\nCron UTC: ${cron}`;
+    h+=`<div class="cfg"><h3><span class="dot" style="background:${d.color}"></span>${d.acc} <small style="color:var(--muted);font-weight:400">· ${apr}</small></h3>
+      <div class="field"><span class="k">Cron (UTC) — nếu dùng ô "Cron expression" trên giao diện <button class="copy" onclick="navigator.clipboard.writeText(document.getElementById('cr${i}').textContent.split('  |  ')[0])">Copy</button></span><div class="cronline"><code id="cr${i}">${cron}</code></div></div>
+      <div class="field"><span class="k">📋 Mẫu Prompt — dán thẳng vào chat <b>Claude CLI</b> hoặc sau lệnh <code>/schedule</code> để tạo routine ngay (không cần thao tác UI) <button class="copy" onclick="copyTA('pt${i}')">Copy</button></span><textarea id="pt${i}" readonly>${prompt}</textarea></div>
+    </div>`;
+  });
+  document.getElementById('cfgs').innerHTML=h;
+  linkResize(document.getElementById('pt0'),document.getElementById('pt1'));
+}
+function copyTA(id){const t=document.getElementById(id);t.select();navigator.clipboard.writeText(t.value);}
+
+// Kéo tay 1 ô prompt → ô kia tự cao bằng (đồng bộ chiều cao). Dùng ResizeObserver.
+let cfgRO=null;
+function linkResize(a,b){
+  if(!a||!b||!window.ResizeObserver) return;
+  if(cfgRO) cfgRO.disconnect();            // tránh rò observer khi render lại
+  let lock=false;
+  cfgRO=new ResizeObserver(es=>{
+    if(lock) return;
+    for(const e of es){
+      const t=e.target, hgt=t.style.height;
+      if(!hgt) continue;                    // chỉ đồng bộ khi người dùng kéo tay (có height inline)
+      lock=true;
+      (t===a?b:a).style.height=hgt;          // copy chiều cao sang ô còn lại
+    }
+    if(lock) requestAnimationFrame(()=>{lock=false;});
+  });
+  cfgRO.observe(a); cfgRO.observe(b);
+}
+
+function syncUI(){
+  document.getElementById('rArr').value=state.arr; document.getElementById('vArr').textContent=fmt(state.arr);
+  document.getElementById('rA').value=state.A; document.getElementById('vA').textContent=fmt(state.A);
+  document.getElementById('rB').value=state.B; document.getElementById('vB').textContent=fmt(state.B);
+  // nếu A/B đang trùng một preset → coi như đang chọn preset đó (sáng nút tương ứng)
+  const mk=Object.keys(PRESETS).find(k=>Math.abs(PRESETS[k].A-state.A)<1e-9&&Math.abs(PRESETS[k].B-state.B)<1e-9);
+  state.preset=mk||'custom';
+  document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('on',b.dataset.p===state.preset));
+  document.querySelectorAll('#segMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===state.mode));
+  document.getElementById('rArr').disabled=(state.mode==='ontime');
+  document.getElementById('tDimLunch').checked=state.dimLunch;
+  document.getElementById('tDimOut').checked=state.dimOut;
+  document.getElementById('tLabels').checked=state.labels;
+  document.getElementById('tSim').checked=state.sim;
+  document.getElementById('tAvg').checked=state.avg;
+  document.getElementById('tCrit').checked=state.showCrit;
+  document.getElementById('tGate').checked=state.skipGate;
+  document.querySelectorAll('#segAgg button').forEach(b=>b.classList.toggle('on',b.dataset.g===state.aggMethod));
+  document.getElementById('rBurnC').value=state.burn; document.getElementById('vBurnC').textContent=dur(state.burn);
+  const rb=document.getElementById('rBurn'); if(rb)rb.value=state.burn;
+}
+
+// drag (accounts + arrival)
+let drag=null;
+function onDown(e){const el=e.currentTarget;const key=el.dataset.drag;if(!key)return;
+  drag={key,x0:e.clientX,base:(key==='arr'?state.arr:state[key]),w:el.closest('.track').getBoundingClientRect().width,
+        min:parseFloat(el.dataset.min),max:parseFloat(el.dataset.max)};
+  el.classList.add('grabbing');e.preventDefault();e.stopPropagation();}
+window.addEventListener('mousemove',e=>{if(!drag)return;const dh=(e.clientX-drag.x0)/drag.w*(T1-T0);let nb=Math.round((drag.base+dh)*4)/4;nb=Math.max(drag.min,Math.min(drag.max,nb));
+  if(drag.key==='arr')state.arr=nb; else {state[drag.key]=nb; state.preset='custom';}
+  render();});
+window.addEventListener('mouseup',()=>{drag=null;});
+
+// sliders + presets + toggles
+document.getElementById('rArr').addEventListener('input',e=>{state.arr=parseFloat(e.target.value);render();});
+document.getElementById('rA').addEventListener('input',e=>{state.A=parseFloat(e.target.value);state.preset='custom';render();});
+document.getElementById('rB').addEventListener('input',e=>{state.B=parseFloat(e.target.value);state.preset='custom';render();});
+document.getElementById('presets').addEventListener('click',e=>{const p=e.target.dataset.p;if(!p)return;state.preset=p;state.A=PRESETS[p].A;state.B=PRESETS[p].B;render();});
+document.getElementById('segMode').addEventListener('click',e=>{const m=e.target.dataset.m;if(!m)return;state.mode=m;render();});
+document.getElementById('tDimOut').addEventListener('change',e=>{state.dimOut=e.target.checked;render();});
+document.getElementById('tDimLunch').addEventListener('change',e=>{state.dimLunch=e.target.checked;render();});
+document.getElementById('tLabels').addEventListener('change',e=>{state.labels=e.target.checked;render();});
+document.getElementById('tSim').addEventListener('change',e=>{state.sim=e.target.checked;render();});
+document.getElementById('tAvg').addEventListener('change',e=>{state.avg=e.target.checked;render();});
+document.getElementById('tCrit').addEventListener('change',e=>{state.showCrit=e.target.checked;render();});
+document.getElementById('tGate').addEventListener('change',e=>{state.skipGate=e.target.checked;render();});
+document.getElementById('segAgg').addEventListener('click',e=>{const g=e.target.dataset.g;if(!g)return;state.aggMethod=g;render();});
+document.getElementById('rBurn').addEventListener('input',e=>{state.burn=parseFloat(e.target.value);render();});
+document.getElementById('rBurnC').addEventListener('input',e=>{state.burn=parseFloat(e.target.value);render();});
+
+buildAxis(); render();
+
+// Vạch NOW tự cập nhật mỗi phút (không cần tải lại trang)
+function tickNow(){
+  const now=new Date(), nh=now.getHours()+now.getMinutes()/60;
+  document.querySelectorAll('.nowline').forEach(el=>el.remove());
+  if(nh>=T0 && nh<=T1){
+    document.querySelectorAll('#timeline .track').forEach(tr=>{
+      const n=document.createElement('div'); n.className='nowline'; n.style.left=pct(nh)+'%';
+      n.setAttribute('data-t', fmt(nh)); tr.appendChild(n);
+    });
+  }
+}
+tickNow();
+// canh đúng đầu phút kế tiếp rồi lặp mỗi 60s
+setTimeout(()=>{ tickNow(); setInterval(tickNow, 60000); }, (60 - new Date().getSeconds())*1000);
+</script>
+</body>
+</html>
