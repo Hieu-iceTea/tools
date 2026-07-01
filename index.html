@@ -3,26 +3,295 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tools — hieu-icetea</title>
+<title>Tools — Hiếu iceTea | Tập hợp công cụ nhỏ, độc lập</title>
+<meta name="description" content="Tools là tập hợp các công cụ web nhỏ, độc lập do Hiếu iceTea xây dựng: mô phỏng, tính toán, lập lịch... Mỗi công cụ tự chạy trong trình duyệt, không cần cài đặt.">
+<meta name="keywords" content="tools, công cụ, Hiếu iceTea, Claude, mô phỏng, lập lịch, tiện ích web">
+<meta name="author" content="Hiếu iceTea">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tools.hieu-icetea.io.vn/">
+
 <link rel="icon" href="./favicon.ico">
-<meta property="og:title" content="Tools — hieu-icetea">
-<meta property="og:description" content="Tập hợp các công cụ nhỏ, độc lập.">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="theme-color" content="#FFF3E3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F2B27" media="(prefers-color-scheme: dark)">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tools.hieu-icetea.io.vn/">
+<meta property="og:title" content="Tools — Hiếu iceTea">
+<meta property="og:description" content="Tập hợp các công cụ web nhỏ, độc lập do Hiếu iceTea xây dựng.">
 <meta property="og:image" content="https://tools.hieu-icetea.io.vn/assets/images/og-image/v3-mint-glow.png">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tools — Hiếu iceTea">
+<meta name="twitter:description" content="Tập hợp các công cụ web nhỏ, độc lập do Hiếu iceTea xây dựng.">
+<meta name="twitter:image" content="https://tools.hieu-icetea.io.vn/assets/images/og-image/v3-mint-glow.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Tools — Hiếu iceTea",
+  "url": "https://tools.hieu-icetea.io.vn/",
+  "inLanguage": "vi",
+  "description": "Tập hợp các công cụ web nhỏ, độc lập do Hiếu iceTea xây dựng.",
+  "author": { "@type": "Person", "name": "Hiếu iceTea" }
+}
+</script>
+
+<!-- Chống chớp sáng/tối: đặt class trước khi trang render -->
+<script>
+(function () {
+  var stored = localStorage.getItem('theme');
+  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var isDark = stored ? stored === 'dark' : prefersDark;
+  document.documentElement.classList.toggle('dark', isDark);
+})();
+</script>
+
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        cream: '#FFF3E3',
+        ink: '#1B5955',
+        inkmuted: '#3d7d73',
+        mint: '#95C79E',
+        peach: '#F6B8A6',
+        mustard: '#FED786',
+        lavender: '#9B9DC2',
+        darkbg: '#0F2B27',
+        darksurface: '#153833',
+      }
+    }
+  }
+}
+</script>
+
+<style>
+  /* Mượt hoá chuyển đổi sáng/tối */
+  html, body { transition: background-color .35s ease, color .35s ease; }
+  * { transition-property: background-color, border-color, color, transform, box-shadow, opacity; transition-duration: .25s; transition-timing-function: ease; }
+  .no-js-only { display: none; }
+  html:not(.js) .js-only { display: none !important; }
+  html:not(.js) .no-js-only { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp .5s ease both; }
+  ::selection { background: #95C79E; color: #1B5955; }
+</style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-  <div class="max-w-3xl mx-auto px-6 py-16">
-    <h1 class="text-2xl font-bold mb-1">🧰 Tools</h1>
-    <p class="text-slate-400 text-sm mb-10">Tập hợp các công cụ nhỏ, độc lập.</p>
+<body class="bg-cream text-ink dark:bg-darkbg dark:text-cream min-h-screen antialiased">
 
-    <div class="grid gap-4">
-      <a href="./claude-session-planner/" class="block rounded-xl border border-slate-800 bg-slate-900 hover:border-slate-600 hover:bg-slate-800 transition p-5">
-        <div class="font-semibold text-slate-100">Claude Session Planner</div>
-        <div class="text-sm text-slate-400 mt-1">Mô phỏng & tối ưu lịch so le nhiều tài khoản Claude theo cửa sổ phiên 5 giờ.</div>
-      </a>
+<!-- Cảnh báo khi JS bị tắt: toàn bộ danh sách tool được render bằng JS -->
+<noscript>
+  <div class="max-w-3xl mx-auto px-6 py-6">
+    <div class="rounded-xl border-2 border-mustard bg-mustard/20 text-ink px-5 py-4 text-sm font-medium">
+      ⚠️ Trang này cần bật <b>JavaScript</b> để hiển thị danh sách công cụ (dữ liệu được render động).
+      Vui lòng bật JavaScript trong trình duyệt rồi tải lại trang.
     </div>
-
-    <footer class="mt-16 text-xs text-slate-500">tools.hieu-icetea.io.vn</footer>
   </div>
+</noscript>
+
+<div class="js-only">
+
+  <!-- Nền hiệu ứng gradient mờ, trang trí -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="absolute w-[520px] h-[520px] rounded-full opacity-40 dark:opacity-20 blur-3xl -top-40 -right-32" style="background:radial-gradient(circle,#FED786,transparent 70%)"></div>
+    <div class="absolute w-[460px] h-[460px] rounded-full opacity-40 dark:opacity-20 blur-3xl -bottom-40 -left-24" style="background:radial-gradient(circle,#95C79E,transparent 70%)"></div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-6 py-10 sm:py-16">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-10 sm:mb-14">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-mint flex items-center justify-center flex-shrink-0">
+          <svg viewBox="0 0 24 24" fill="#1B5955" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M12 6.75a5.25 5.25 0 0 1 6.775-5.025.75.75 0 0 1 .313 1.248l-3.32 3.319c.063.475.276.934.641 1.299.365.365.824.578 1.3.64l3.318-3.319a.75.75 0 0 1 1.248.313 5.25 5.25 0 0 1-5.472 6.756c-1.018-.086-1.87.1-2.309.634L7.344 21.3A3.298 3.298 0 1 1 2.7 16.657l8.684-7.151c.533-.44.72-1.291.634-2.309A5.342 5.342 0 0 1 12 6.75ZM4.117 19.125a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.008a.75.75 0 0 1-.75-.75v-.008Z" clip-rule="evenodd"/>
+            <path d="m10.076 8.64-2.201-2.2V4.874a.75.75 0 0 0-.364-.643l-3.75-2.25a.75.75 0 0 0-.916.113l-.75.75a.75.75 0 0 0-.113.916l2.25 3.75a.75.75 0 0 0 .643.364h1.564l2.062 2.062 1.575-1.297Z"/>
+            <path fill-rule="evenodd" d="m12.556 17.329 4.183 4.182a3.375 3.375 0 0 0 4.773-4.773l-3.306-3.305a6.803 6.803 0 0 1-1.53.043c-.394-.034-.682-.006-.867.042a.589.589 0 0 0-.167.063l-3.086 3.748Zm3.414-1.36a.75.75 0 0 1 1.06 0l1.875 1.876a.75.75 0 1 1-1.06 1.06L15.97 17.03a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div>
+          <div class="font-extrabold text-lg leading-tight">Tools</div>
+          <div class="text-xs text-inkmuted dark:text-mint/80 leading-tight">bởi Hiếu iceTea 🍀</div>
+        </div>
+      </div>
+
+      <button id="themeToggle" type="button" aria-label="Chuyển chế độ sáng/tối"
+        class="w-10 h-10 rounded-full flex items-center justify-center border border-ink/15 dark:border-cream/15 hover:bg-ink/5 dark:hover:bg-cream/10 active:scale-90 transition">
+        <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5 hidden dark:block">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/>
+        </svg>
+        <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-5 h-5 block dark:hidden">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Hero -->
+    <section class="mb-10 sm:mb-12 fade-up">
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Tập hợp công cụ nhỏ, độc lập</h1>
+      <p class="text-inkmuted dark:text-cream/70 text-sm sm:text-base max-w-xl mb-5">
+        Mỗi công cụ dưới đây tự chạy hoàn toàn trong trình duyệt của bạn — không tài khoản, không server riêng, không theo dõi.
+      </p>
+      <div class="flex flex-wrap gap-2 text-xs font-medium">
+        <span id="statCount" class="px-3 py-1.5 rounded-full bg-mint/30 dark:bg-mint/20 text-ink dark:text-mint">— công cụ</span>
+        <span class="px-3 py-1.5 rounded-full bg-peach/30 dark:bg-peach/20 text-ink dark:text-peach">100% tĩnh · GitHub Pages</span>
+        <span class="px-3 py-1.5 rounded-full bg-lavender/30 dark:bg-lavender/20 text-ink dark:text-lavender">Mã nguồn mở</span>
+      </div>
+    </section>
+
+    <!-- Search + filter -->
+    <section class="mb-6 sm:mb-8 flex flex-col sm:flex-row gap-3 fade-up" style="animation-delay:.05s">
+      <div class="relative flex-1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-inkmuted dark:text-cream/50">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+        </svg>
+        <input id="searchInput" type="search" placeholder="Tìm công cụ theo tên, mô tả, thẻ..."
+          class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-white/70 dark:bg-darksurface border border-ink/10 dark:border-cream/10 text-sm placeholder:text-inkmuted/60 dark:placeholder:text-cream/40 outline-none focus:ring-2 focus:ring-mint">
+        <button id="clearSearch" type="button" aria-label="Xoá tìm kiếm" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-inkmuted hover:text-ink dark:text-cream/50 dark:hover:text-cream">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="tagFilters" class="flex flex-wrap gap-2 items-center text-xs"></div>
+    </section>
+
+    <!-- Tools grid: render bằng JS từ bộ dữ liệu TOOLS -->
+    <section aria-label="Danh sách công cụ">
+      <div id="toolsGrid" class="grid sm:grid-cols-2 gap-4"></div>
+      <div id="emptyState" class="hidden text-center py-16 text-inkmuted dark:text-cream/60 text-sm">
+        😕 Không tìm thấy công cụ nào phù hợp.
+      </div>
+    </section>
+
+    <footer class="mt-16 pt-6 border-t border-ink/10 dark:border-cream/10 flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between text-xs text-inkmuted dark:text-cream/50">
+      <span>tạo bởi Hiếu iceTea 🍀</span>
+      <span>tools.hieu-icetea.io.vn</span>
+    </footer>
+  </div>
+</div>
+
+<script>
+document.documentElement.classList.add('js');
+
+/* ===== Bộ dữ liệu công cụ (Data-Driven) ===== */
+const TOOLS = [
+  {
+    id: 'claude-session-planner',
+    name: 'Claude Session Planner',
+    description: 'Mô phỏng & tối ưu lịch so le nhiều tài khoản Claude theo cửa sổ phiên 5 giờ, giảm tối đa thời gian chờ hồi quota.',
+    url: './claude-session-planner/',
+    tags: ['Claude', 'Lập lịch', 'Mô phỏng'],
+    updated: '2026-06-19'
+  }
+];
+
+const ACCENTS = ['mint', 'peach', 'mustard', 'lavender'];
+const grid = document.getElementById('toolsGrid');
+const emptyState = document.getElementById('emptyState');
+const statCount = document.getElementById('statCount');
+const tagFiltersEl = document.getElementById('tagFilters');
+
+let activeTag = null;
+
+function stripDiacritics(s) {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+function toolCard(tool, idx) {
+  const accent = ACCENTS[idx % ACCENTS.length];
+  const tagsHtml = tool.tags.map(t =>
+    `<span class="px-2 py-0.5 rounded-full bg-${accent}/20 text-[11px] font-medium">${t}</span>`
+  ).join('');
+  return `
+  <a href="${tool.url}" class="group fade-up relative block rounded-2xl border border-ink/10 dark:border-cream/10 bg-white/60 dark:bg-darksurface p-5
+    hover:-translate-y-1 hover:shadow-xl hover:shadow-${accent}/20 hover:border-${accent} transition-all">
+    <div class="flex items-start justify-between mb-3">
+      <div class="w-11 h-11 rounded-xl bg-${accent} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+        <svg viewBox="0 0 24 24" fill="#1B5955" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M12 6.75a5.25 5.25 0 0 1 6.775-5.025.75.75 0 0 1 .313 1.248l-3.32 3.319c.063.475.276.934.641 1.299.365.365.824.578 1.3.64l3.318-3.319a.75.75 0 0 1 1.248.313 5.25 5.25 0 0 1-5.472 6.756c-1.018-.086-1.87.1-2.309.634L7.344 21.3A3.298 3.298 0 1 1 2.7 16.657l8.684-7.151c.533-.44.72-1.291.634-2.309A5.342 5.342 0 0 1 12 6.75ZM4.117 19.125a.75.75 0 0 1 .75-.75h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75h-.008a.75.75 0 0 1-.75-.75v-.008Z" clip-rule="evenodd"/>
+          <path d="m10.076 8.64-2.201-2.2V4.874a.75.75 0 0 0-.364-.643l-3.75-2.25a.75.75 0 0 0-.916.113l-.75.75a.75.75 0 0 0-.113.916l2.25 3.75a.75.75 0 0 0 .643.364h1.564l2.062 2.062 1.575-1.297Z"/>
+          <path fill-rule="evenodd" d="m12.556 17.329 4.183 4.182a3.375 3.375 0 0 0 4.773-4.773l-3.306-3.305a6.803 6.803 0 0 1-1.53.043c-.394-.034-.682-.006-.867.042a.589.589 0 0 0-.167.063l-3.086 3.748Zm3.414-1.36a.75.75 0 0 1 1.06 0l1.875 1.876a.75.75 0 1 1-1.06 1.06L15.97 17.03a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-4 h-4 text-inkmuted dark:text-cream/40 group-hover:text-ink dark:group-hover:text-cream group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+      </svg>
+    </div>
+    <div class="font-bold mb-1">${tool.name}</div>
+    <div class="text-sm text-inkmuted dark:text-cream/70 mb-3">${tool.description}</div>
+    <div class="flex flex-wrap gap-1.5 mb-2">${tagsHtml}</div>
+    <div class="text-[11px] text-inkmuted/70 dark:text-cream/40">Cập nhật ${tool.updated}</div>
+  </a>`;
+}
+
+function uniqueTags() {
+  return [...new Set(TOOLS.flatMap(t => t.tags))];
+}
+
+function renderTagFilters() {
+  const tags = uniqueTags();
+  tagFiltersEl.innerHTML = tags.map(tag => `
+    <button data-tag="${tag}" class="tagchip px-3 py-1.5 rounded-full border border-ink/15 dark:border-cream/15 hover:bg-ink/5 dark:hover:bg-cream/10 ${activeTag === tag ? 'bg-ink text-cream dark:bg-cream dark:text-darkbg' : ''}">${tag}</button>
+  `).join('');
+  tagFiltersEl.querySelectorAll('.tagchip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.tag;
+      activeTag = activeTag === tag ? null : tag;
+      renderTagFilters();
+      render();
+    });
+  });
+}
+
+function render() {
+  const q = stripDiacritics(searchInput.value.trim());
+  const filtered = TOOLS.filter(t => {
+    const haystack = stripDiacritics([t.name, t.description, ...t.tags].join(' '));
+    const matchesQuery = !q || haystack.includes(q);
+    const matchesTag = !activeTag || t.tags.includes(activeTag);
+    return matchesQuery && matchesTag;
+  });
+
+  grid.innerHTML = filtered.map((t, i) => toolCard(t, TOOLS.indexOf(t))).join('');
+  grid.querySelectorAll('.fade-up').forEach((el, i) => el.style.animationDelay = (i * 0.06) + 's');
+  emptyState.classList.toggle('hidden', filtered.length > 0);
+  statCount.textContent = `🧰 ${TOOLS.length} công cụ`;
+  clearSearch.classList.toggle('hidden', !searchInput.value);
+}
+
+const searchInput = document.getElementById('searchInput');
+const clearSearch = document.getElementById('clearSearch');
+searchInput.addEventListener('input', render);
+clearSearch.addEventListener('click', () => { searchInput.value = ''; render(); searchInput.focus(); });
+
+renderTagFilters();
+render();
+
+/* ===== JSON-LD ItemList (SEO, sinh từ đúng dữ liệu TOOLS) ===== */
+const itemListLd = document.createElement('script');
+itemListLd.type = 'application/ld+json';
+itemListLd.textContent = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: TOOLS.map((t, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    url: new URL(t.url, 'https://tools.hieu-icetea.io.vn/').href,
+    name: t.name
+  }))
+});
+document.head.appendChild(itemListLd);
+
+/* ===== Dark/Light toggle ===== */
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+</script>
 </body>
 </html>
