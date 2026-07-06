@@ -1,0 +1,65 @@
+<svg viewBox="0 0 1200 630" width="1200" height="630" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <!-- Phương án D — UI mockup | Claude Chat Viewer og-image 1200x630
+       Tác giả: Hiếu iceTea 🍀 — Hỗ trợ bởi: Claude (Claude Code, model Claude Fable 5) -->
+  <defs>
+    <filter id="dshadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#2b2a26" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="#faf9f5"/>
+  <circle cx="80" cy="620" r="200" fill="#f3ede9" opacity=".8"/>
+  <circle cx="1150" cy="40" r="160" fill="#f3ede9"/>
+
+  <!-- Khối chữ bên trái -->
+  <g transform="translate(90,96) scale(2.6666)" fill="none" stroke="#c96442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </g>
+  <text x="176" y="146" font-size="76" font-weight="800" letter-spacing="-1.5" fill="#2b2a26">Claude Chat Viewer</text>
+  <text x="90" y="228" font-size="38" fill="#8a877d">Xem offline dữ liệu export từ claude.ai</text>
+
+  <g font-size="26" font-weight="600">
+    <rect x="90" y="290" width="330" height="54" rx="27" fill="#f3ede9"/>
+    <text x="255" y="325" text-anchor="middle" fill="#c96442">100% trong trình duyệt</text>
+    <rect x="90" y="362" width="264" height="54" rx="27" fill="#f3ede9"/>
+    <text x="222" y="397" text-anchor="middle" fill="#c96442">Tìm kiếm toàn văn</text>
+    <rect x="90" y="434" width="292" height="54" rx="27" fill="#f3ede9"/>
+    <text x="236" y="469" text-anchor="middle" fill="#c96442">Xuất Markdown · ZIP</text>
+  </g>
+
+  <!-- Mockup cửa sổ trình duyệt bên phải -->
+  <g filter="url(#dshadow)">
+    <rect x="560" y="268" width="550" height="310" rx="14" fill="#ffffff" stroke="#e7e4db" stroke-width="2"/>
+  </g>
+  <path d="M560 282a14 14 0 0 1 14-14h522a14 14 0 0 1 14 14v26H560z" fill="#f3ede9"/>
+  <circle cx="584" cy="288" r="6" fill="#f6a5a5"/>
+  <circle cx="606" cy="288" r="6" fill="#fed786"/>
+  <circle cx="628" cy="288" r="6" fill="#a8d5a2"/>
+  <rect x="650" y="276" width="380" height="24" rx="12" fill="#faf9f5" stroke="#e7e4db"/>
+  <text x="666" y="293" font-size="15" fill="#8a877d">tools.hieu-icetea.io.vn/claude-chat-viewer</text>
+
+  <!-- Sidebar -->
+  <line x1="712" y1="308" x2="712" y2="578" stroke="#e7e4db" stroke-width="2"/>
+  <rect x="576" y="324" width="120" height="34" rx="8" fill="#f3ede9" stroke="#c96442" stroke-opacity=".45"/>
+  <rect x="576" y="370" width="120" height="34" rx="8" fill="#efece4"/>
+  <rect x="576" y="416" width="120" height="34" rx="8" fill="#efece4"/>
+  <rect x="576" y="462" width="120" height="34" rx="8" fill="#efece4"/>
+  <rect x="576" y="508" width="120" height="34" rx="8" fill="#efece4"/>
+
+  <!-- Bong bóng người dùng -->
+  <rect x="830" y="326" width="256" height="62" rx="12" fill="#f0ede4"/>
+  <rect x="848" y="342" width="220" height="9" rx="4" fill="#d9d4c7"/>
+  <rect x="848" y="361" width="150" height="9" rx="4" fill="#d9d4c7"/>
+
+  <!-- Bong bóng Claude -->
+  <rect x="736" y="408" width="350" height="130" rx="12" fill="#ffffff" stroke="#e7e4db" stroke-width="2"/>
+  <circle cx="756" cy="430" r="6" fill="#c96442"/>
+  <rect x="772" y="424" width="290" height="9" rx="4" fill="#d9d4c7"/>
+  <rect x="752" y="448" width="310" height="9" rx="4" fill="#d9d4c7"/>
+  <rect x="752" y="472" width="120" height="9" rx="4" fill="#d9d4c7"/>
+  <rect x="880" y="468" width="86" height="17" rx="4" fill="#ffe08a"/>
+  <rect x="752" y="500" width="240" height="9" rx="4" fill="#d9d4c7"/>
+
+  <line x1="90" y1="524" x2="500" y2="524" stroke="#e7e4db" stroke-width="2"/>
+  <text x="90" y="560" font-size="28" fill="#8a877d">tools.hieu-icetea.io.vn</text>
+  <text x="90" y="600" font-size="28" font-weight="600" fill="#2b2a26">Hiếu iceTea 🍀</text>
+</svg>

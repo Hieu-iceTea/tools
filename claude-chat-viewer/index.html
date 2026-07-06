@@ -1,0 +1,226 @@
+<!doctype html>
+<!--
+  Claude Chat Viewer — trình xem offline cho dữ liệu export của claude.ai
+  Tác giả: Hiếu iceTea 🍀
+  Hỗ trợ bởi: Claude (Claude Code, model Claude Opus 4.8)
+  Kiến trúc data-driven: toàn bộ code tách khỏi dữ liệu; đọc trực tiếp thư mục export.
+-->
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Chat Viewer - by Hiếu iceTea 🍀</title>
+
+  <!-- Chia sẻ mạng xã hội — Facebook / Messenger / Zalo / Microsoft Teams đều đọc Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tools.hieu-icetea.io.vn/claude-chat-viewer/">
+  <meta property="og:site_name" content="Tools — Hiếu iceTea">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:title" content="Claude Chat Viewer — Xem offline dữ liệu export claude.ai">
+  <meta property="og:description" content="Xem dữ liệu export từ claude.ai ngay trong trình duyệt, 100% offline — không gửi đi đâu. Tìm kiếm toàn văn, xem dự án, xuất Markdown/ZIP. Mở là dùng, miễn phí.">
+  <meta property="og:image" content="https://tools.hieu-icetea.io.vn/claude-chat-viewer/assets/og-image/og-a-cream.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Claude Chat Viewer — Xem offline dữ liệu export từ claude.ai, 100% trong trình duyệt">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Claude Chat Viewer — Xem offline dữ liệu export claude.ai">
+  <meta name="twitter:description" content="Xem dữ liệu export từ claude.ai ngay trong trình duyệt, 100% offline. Tìm kiếm toàn văn, xuất Markdown/ZIP.">
+  <meta name="twitter:image" content="https://tools.hieu-icetea.io.vn/claude-chat-viewer/assets/og-image/og-a-cream.png">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    // Bắt lỗi khởi động (vd trình duyệt cũ không hiểu cú pháp) → hiện thông báo thay vì trang trắng
+    window.addEventListener("error", function (e) {
+      var app = document.getElementById("app");
+      if (app && !app.hidden) return;           // app đã chạy được thì bỏ qua
+      var f = document.getElementById("fatal");
+      if (!f) return;
+      f.hidden = false;
+      var m = document.getElementById("fatalMsg");
+      if (m && e && e.message) m.textContent = "Chi tiết kỹ thuật: " + e.message;
+    });
+  </script>
+</head>
+<body>
+
+  <!-- ======= Khi TẮT JavaScript ======= -->
+  <noscript>
+    <div class="overlay">
+      <div class="panel">
+        <div class="logo-pulse" style="animation:none"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+        <h2>Cần bật JavaScript</h2>
+        <p class="sub">Ứng dụng đọc &amp; hiển thị dữ liệu ngay trong trình duyệt của bạn và cần
+          <b>JavaScript</b> để hoạt động. Vui lòng bật JavaScript rồi tải lại trang.</p>
+        <p class="hint">Khuyến nghị dùng phiên bản mới của <b>Chrome</b> hoặc <b>Edge</b>.</p>
+        <p class="credit" style="margin-top:16px">Thực hiện bởi <a class="credit-link" href="https://hieu-icetea.io.vn" target="_blank" rel="noopener">Hiếu iceTea</a> 🍀</p>
+      </div>
+    </div>
+  </noscript>
+
+  <!-- ======= Trình duyệt không tương thích / lỗi khởi động ======= -->
+  <div id="fatal" class="overlay" hidden>
+    <div class="panel">
+      <div class="logo-pulse" style="animation:none"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg></div>
+      <h2>Trình duyệt không tương thích</h2>
+      <p class="sub">Có lỗi khi khởi động ứng dụng — có thể trình duyệt của bạn quá cũ
+        hoặc thiếu tính năng cần thiết.</p>
+      <p class="hint" id="fatalMsg"></p>
+      <p class="hint">Hãy dùng phiên bản mới nhất của <b>Chrome</b> hoặc <b>Edge</b> rồi tải lại trang.</p>
+    </div>
+  </div>
+
+  <!-- ======= Màn hình đang tải ======= -->
+  <div id="loading" class="overlay" hidden>
+    <div class="panel">
+      <div class="logo-pulse"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <h2>Đang tải dữ liệu</h2>
+      <p class="sub">Đọc thư mục và dựng hội thoại…</p>
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div id="loadStatus">Đang chuẩn bị…</div>
+      <div class="bar"><span id="loadBar"></span></div>
+      <div id="loadExtra" class="load-extra" hidden>
+        <span id="loadElapsed"></span>
+        <span id="loadEta"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Màn hình chọn thư mục ======= -->
+  <div id="onboarding" class="overlay" hidden>
+    <div class="panel">
+      <div class="ob-back"><a class="backlink" href="../" title="Tools by Hiếu iceTea"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg><span class="bl-base">Tools</span><span class="bl-extra"> by Hiếu iceTea</span></a></div>
+      <div class="logo-pulse"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+      <h2 id="obTitle">Chào mừng</h2>
+      <p class="sub" id="obDesc"></p>
+      <div style="margin:22px 0 6px"><button id="btnChoose" class="btn">Chọn thư mục dữ liệu</button></div>
+      <div class="warn" id="obError" hidden></div>
+      <ol class="steps">
+        <li>Giải nén file <code>.zip</code> export tải từ claude.ai.</li>
+        <li>Bấm nút trên và chọn <b>thư mục vừa giải nén</b> (bên trong có <code>conversations.json</code>).</li>
+        <li>Cho phép trình duyệt đọc thư mục. Ứng dụng sẽ ghi nhớ cho lần sau.</li>
+      </ol>
+      <details class="ob-export">
+        <summary>Chưa có file export? Cách lấy dữ liệu từ Claude ↓</summary>
+        <ol class="steps">
+          <li>Mở <b>claude.ai</b> → bấm avatar/tên (góc màn hình) → <b>Settings</b>.</li>
+          <li>Vào mục <b>Privacy</b> → bấm <b>Export data</b>.</li>
+          <li>Claude gửi file <code>.zip</code> về <b>email</b> của tài khoản (mất vài phút đến vài giờ).</li>
+        </ol>
+        <p class="hint" style="margin-top:6px">Export chỉ gồm dữ liệu của <b>tài khoản đang đăng nhập</b>. Có nhiều tài khoản thì export từng cái.</p>
+      </details>
+      <p class="hint">Dữ liệu <b>không</b> được tải lên đâu cả — mọi thứ chạy ngay trong trình duyệt của bạn.</p>
+      <p class="credit" style="margin-top:14px">Thực hiện bởi <a class="credit-link" href="https://hieu-icetea.io.vn" target="_blank" rel="noopener">Hiếu iceTea</a> 🍀</p>
+    </div>
+  </div>
+
+  <!-- ======= Ứng dụng ======= -->
+  <div id="app" hidden>
+    <aside id="side">
+      <div class="side-top">
+        <!-- Chế độ 2 hàng: nút quay lại nằm hàng riêng (ẩn khi headerRows=1) -->
+        <div class="backlink-bar"><a class="backlink" href="../" title="Tools by Hiếu iceTea"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg><span class="bl-base">Tools</span><span class="bl-extra"> by Hiếu iceTea</span></a></div>
+        <div class="side-title">
+          <!-- Chế độ 1 hàng: nút quay lại gộp cùng hàng tiêu đề (ẩn khi headerRows=2) -->
+          <span class="backlink-wrap"><a class="backlink" href="../" title="Tools by Hiếu iceTea"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg><span class="bl-base">Tools</span><span class="bl-extra"> by Hiếu iceTea</span></a></span>
+          <span id="brand"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Claude Chat Viewer</span></span>
+          <button id="btnSettings" class="gear" title="Cài đặt" aria-label="Cài đặt"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.1 3.9 10.5 1.5 13.5 1.5 13.9 3.9 16.4 5.0 18.4 3.5 20.5 5.6 19.0 7.6 20.1 10.1 22.5 10.5 22.5 13.5 20.1 13.9 19.0 16.4 20.5 18.4 18.4 20.5 16.4 19.0 13.9 20.1 13.5 22.5 10.5 22.5 10.1 20.1 7.6 19.0 5.6 20.5 3.5 18.4 5.0 16.4 3.9 13.9 1.5 13.5 1.5 10.5 3.9 10.1 5.0 7.6 3.5 5.6 5.6 3.5 7.6 5.0Z"/><circle cx="12" cy="12" r="3.1"/></svg></button>
+        </div>
+        <div id="rootName" class="root-name" title=""></div>
+        <div class="tabs">
+          <button id="tabConv" class="tab active">Hội thoại</button>
+          <button id="tabProj" class="tab">Dự án</button>
+          <button id="btnExportAll" class="tab tab-export" title="Xuất tất cả (.zip)" aria-label="Xuất tất cả (.zip)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input id="q" placeholder="Tìm…">
+        <button id="qClear" class="q-clear" title="Xoá tìm kiếm" aria-label="Xoá tìm kiếm" hidden><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      </div>
+      <div id="list"></div>
+      <div class="side-foot">
+        <span class="credit">Thực hiện bởi <a class="credit-link" href="https://hieu-icetea.io.vn" target="_blank" rel="noopener">Hiếu iceTea</a> 🍀</span>
+      </div>
+    </aside>
+    <main id="main">
+      <div id="mainEmpty">← Chọn một mục để xem</div>
+    </main>
+  </div>
+
+  <!-- ======= Modal cài đặt ======= -->
+  <div id="settings" class="modal" hidden>
+    <div class="panel">
+      <h2>Cài đặt</h2>
+      <div class="field">
+        <div class="k">Thư mục dữ liệu</div>
+        <div class="v" id="setRoot">—</div>
+        <div class="k2">Trình duyệt chỉ cung cấp <b>tên thư mục</b>, không cung cấp đường dẫn tuyệt đối (vì bảo mật).</div>
+      </div>
+      <div class="field">
+        <div class="k">Tổng dung lượng</div>
+        <div class="v" id="setSize">—</div>
+      </div>
+      <div class="field">
+        <div class="k">Tài khoản</div>
+        <div class="v" id="setAccount">—</div>
+      </div>
+      <div class="field">
+        <div class="k">Số điện thoại</div>
+        <div class="v" id="setPhone">—</div>
+      </div>
+      <div class="field">
+        <div class="k">Nội dung</div>
+        <div class="v" id="setCounts">—</div>
+      </div>
+      <div class="field" id="setRawWrap"></div>
+      <div class="field">
+        <div class="k">Giao diện</div>
+        <label class="switch v"><input type="checkbox" id="themeToggle"> Chế độ tối</label>
+      </div>
+      <div class="row">
+        <button id="btnChange" class="btn small">Đổi thư mục</button>
+        <button id="btnClear" class="btn small ghost">Xoá cấu hình</button>
+        <button id="btnExportUsers" class="btn small ghost" title="Xuất thông tin tài khoản (users.json) ra Markdown">Xuất .md</button>
+        <button id="btnCloseSettings" class="btn small ghost" style="margin-left:auto">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= Modal xuất Markdown ======= -->
+  <div id="exportModal" class="modal" hidden>
+    <div class="panel">
+      <h2 id="exTitle">Xuất hội thoại ra Markdown</h2>
+      <div class="ex-presets">
+        <button id="exPresetFull" class="btn small ghost" title="Bật tất cả, gồm JSON gốc — không mất gì">Lưu trữ đầy đủ (100%)</button>
+        <button id="exPresetAI" class="btn small ghost" title="Đủ ngữ cảnh cho AI tiếp tục, tiết kiệm dung lượng">Gọn cho AI</button>
+      </div>
+      <div id="exOptions" class="ex-options"></div>
+      <div class="ex-coverage">
+        <span id="exCoverage">Độ phủ dữ liệu: —</span>
+        <div class="ex-covbar"><span id="exCovFill"></span></div>
+      </div>
+      <div class="field">
+        <div class="k">Tên file</div>
+        <input id="exFilename" class="ex-filename" type="text" spellcheck="false">
+      </div>
+      <div class="row">
+        <button id="exDownload" class="btn small">Tải file .md</button>
+        <button id="exClose" class="btn small ghost" style="margin-left:auto">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- input dự phòng khi trình duyệt không hỗ trợ File System Access API -->
+  <input id="dirInput" type="file" webkitdirectory directory multiple hidden>
+
+  <script src="js/config.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/markdown.js"></script>
+  <script src="js/blocks.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/loader.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/zip.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
